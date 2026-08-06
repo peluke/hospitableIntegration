@@ -158,6 +158,9 @@ def normalize_task(item: dict[str, Any]) -> dict[str, Any]:
         or item.get("teammate")
         or item.get("assigned_to")
     )
+    task_assignment = _first_dict(
+        attrs.get("task_assignment") or item.get("task_assignment")
+    )
     property_uuid = (
         attrs.get("property_uuid")
         or attrs.get("property_id")
@@ -192,14 +195,17 @@ def normalize_task(item: dict[str, Any]) -> dict[str, Any]:
     status = (
         attrs.get("status")
         or attrs.get("state")
+        or attrs.get("progress_status")
         or item.get("status")
         or item.get("state")
+        or item.get("progress_status")
     )
     assignment_status = (
         attrs.get("assignment_status")
         or attrs.get("acceptance_status")
         or attrs.get("assignee_status")
         or attrs.get("teammate_status")
+        or task_assignment.get("status")
         or item.get("assignment_status")
         or item.get("acceptance_status")
         or item.get("assignee_status")
@@ -228,6 +234,7 @@ def normalize_task(item: dict[str, Any]) -> dict[str, Any]:
         "reservation_uuid": str(reservation_uuid) if reservation_uuid else None,
         "assignee_name": _guest_name(assignee),
         "assignee_uuid": _object_identifier(assignee),
+        "assignment_updated_at": task_assignment.get("updated_at"),
     }
 
 

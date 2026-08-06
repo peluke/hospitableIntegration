@@ -52,6 +52,10 @@ Task diagnostics expose detail fetch counts, detail fetch errors, and sampled
 response keys so field-shape issues can be debugged without publishing raw task
 payloads.
 
+The integration reads Hospitable's task `progress_status` and
+`task_assignment.status` fields. Assignment alerts trigger for pending,
+unaccepted, rejected, cancelled, or unassigned checkout tasks.
+
 If the Hospitable task endpoint is unavailable for the token, the task sensors
 still load as `0`/`off` and expose the API error in the
 `hospitable_task_error` attribute. Task list requests intentionally avoid
@@ -99,6 +103,23 @@ actions:
 - [Notes](https://github.com/peluke/hospitableIntegration/wiki/Notes)
 - [Troubleshooting](https://github.com/peluke/hospitableIntegration/wiki/Troubleshooting)
 - [First Arrival Blueprint](https://github.com/peluke/hospitableIntegration/wiki/First-Arrival-Blueprint)
+
+## Task API Probe
+
+For local troubleshooting, `scripts/hospitable_task_probe.py` can inspect the
+Hospitable task list/detail response structure without storing credentials:
+
+```bash
+export HOSPITABLE_API_TOKEN="your-token"
+export HOSPITABLE_PROPERTY_UUIDS="property-uuid-1,property-uuid-2"
+python3 scripts/hospitable_task_probe.py --fetch-detail --limit 3
+```
+
+To inspect one task detail directly:
+
+```bash
+python3 scripts/hospitable_task_probe.py --task-id "task-uuid" --show-values
+```
 
 Blueprint import URL:
 

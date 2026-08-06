@@ -286,6 +286,7 @@ def _public_task_attrs(task: dict[str, Any]) -> dict[str, Any]:
         "reservation_uuid": task.get("reservation_uuid"),
         "assignee_name": task.get("assignee_name"),
         "assignee_uuid": task.get("assignee_uuid"),
+        "assignment_updated_at": task.get("assignment_updated_at"),
         "detail_fetched": task.get("detail_fetched"),
         "detail_error": task.get("detail_error"),
     }
@@ -313,6 +314,9 @@ def _is_task_assignment_alert(task: dict[str, Any]) -> bool:
         "not accepted",
         "declined",
         "rejected",
+        "cancelled",
+        "canceled",
+        "unassigned",
     }
 
 

@@ -226,6 +226,33 @@ def test_normalize_task_common_shape():
     assert normalized["assignee_name"] == "Charlotte"
 
 
+def test_normalize_task_hospitable_assignment_shape():
+    item = {
+        "id": "task-1",
+        "name": "CasaManzanita0374",
+        "progress_status": "not_started",
+        "start_date": "2026-08-08T10:00:00-07:00",
+        "task_assignment": {
+            "status": "accepted",
+            "updated_at": "2026-07-18T17:43:57+00:00",
+        },
+        "property": {"id": "property-1", "name": "Casa Manzanita"},
+        "reservation": {"id": "reservation-1"},
+        "teammate": {"id": "teammate-1", "name": "James Blalock"},
+    }
+
+    normalized = normalization.normalize_task(item)
+
+    assert normalized["title"] == "CasaManzanita0374"
+    assert normalized["status"] == "not_started"
+    assert normalized["assignment_status"] == "accepted"
+    assert normalized["assignment_updated_at"] == "2026-07-18T17:43:57+00:00"
+    assert normalized["due_date"] == "2026-08-08T10:00:00-07:00"
+    assert normalized["property_uuid"] == "property-1"
+    assert normalized["reservation_uuid"] == "reservation-1"
+    assert normalized["assignee_name"] == "James Blalock"
+
+
 def test_response_key_sample_exposes_structure_only():
     item = {
         "id": "task-1",

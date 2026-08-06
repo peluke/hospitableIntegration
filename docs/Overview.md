@@ -40,6 +40,7 @@ Each Hospitable property gets:
 - `Checkout Tasks`: count of tasks that land on known checkout dates.
 - `Checkout Task Alert`: `on` when a checkout-day task is pending, unaccepted, declined, or rejected.
 - Task diagnostic attributes: detail fetch attempts, successes, errors, and sampled response keys for troubleshooting Hospitable task status fields.
+- Hospitable task fields: reads `progress_status`, `task_assignment.status`, and `task_assignment.updated_at`.
 - Current reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
 - Next reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
 
@@ -86,6 +87,7 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-06: Normalized Hospitable task `progress_status` and `task_assignment.status`, added assignment timestamps, and added the local task API probe script.
 - 2026-08-06: Added task-detail diagnostics for checkout tasks so missing Hospitable task status fields can be debugged without exposing raw task payloads.
 - 2026-08-06: Added checkout-task detail enrichment and stopped treating unknown task assignment status as an alert.
 - 2026-08-06: Removed unsupported task list includes from the Hospitable task query.
