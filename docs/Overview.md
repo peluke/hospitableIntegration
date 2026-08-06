@@ -47,6 +47,8 @@ Each Hospitable property gets:
 - `Current Guest`: current in-house guest, with reservation details in attributes.
 - `Next Guest`: next arrival, with reservation details in attributes.
 - `Upcoming Guests`: count of upcoming reservations, with reservation list in attributes.
+- Current reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
+- Next reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
 
 ## Automation Service
 
@@ -76,6 +78,7 @@ Use either:
 
 ## Change Log
 
+- 2026-08-06: Added current and next reservation detail sensors for UUID, code, check-in, check-out, status, and platform.
 - 2026-08-06: Fixed empty guest sensors by querying reservations with resolved property UUIDs, parsing additional Hospitable reservation field shapes, requesting up to 100 reservations, and exposing diagnostic attributes.
 - 2026-08-06: Updated icon/logo accent from yellow to Hospitable-style pink.
 - 2026-08-06: Added original icon/logo brand assets inspired by the Hospitable and Home Assistant project contexts.

@@ -7,6 +7,7 @@ Custom Home Assistant integration for Hospitable Public API v2.
 - Current guest sensors per Hospitable property.
 - Next guest sensors per property.
 - Upcoming guest count sensors with reservation details in attributes.
+- Current and next reservation detail sensors for UUID, code, check-in, check-out, status, and platform.
 - `hospitable_api.post_guest_message` service/action for automations.
 - Personal Access Token setup through the Home Assistant UI.
 
@@ -84,6 +85,7 @@ actions:
 - The integration polls every 15 minutes.
 - Hospitable reservation lookups require property UUIDs. If you leave the property field blank, the integration uses the UUIDs returned by the `/properties` endpoint.
 - Guest lists are exposed as sensor attributes because Home Assistant sensor states must be scalar values.
+- Version `0.1.6` adds separate current and next reservation detail sensors so automations can use scalar entity states instead of parsing attributes.
 
 ## Troubleshooting
 

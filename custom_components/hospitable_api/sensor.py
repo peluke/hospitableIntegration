@@ -15,6 +15,15 @@ from homeassistant.util import dt as dt_util
 from .const import DOMAIN
 from .coordinator import HospitableDataUpdateCoordinator
 
+RESERVATION_FIELD_SENSORS: dict[str, tuple[str, str]] = {
+    "uuid": ("Reservation UUID", "uuid"),
+    "code": ("Reservation Code", "code"),
+    "arrival_date": ("Check In", "arrival_date"),
+    "departure_date": ("Check Out", "departure_date"),
+    "status": ("Status", "status"),
+    "platform": ("Platform", "platform"),
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -33,6 +42,16 @@ async def async_setup_entry(
                 HospitableGuestSensor(coordinator, property_data, "upcoming"),
             ]
         )
+        for sensor_kind in ("current", "next"):
+            entities.extend(
+                HospitableGuestSensor(
+                    coordinator,
+                    property_data,
+                    sensor_kind,
+                    reservation_field=reservation_field,
+                )
+                for reservation_field in RESERVATION_FIELD_SENSORS
+            )
 
     async_add_entities(entities)
 
@@ -49,23 +68,21 @@ class HospitableGuestSensor(
         coordinator: HospitableDataUpdateCoordinator,
         property_data: dict[str, Any],
         sensor_kind: str,
+        reservation_field: str | None = None,
     ) -> None:
         super().__init__(coordinator)
         self._property_uuid = property_data["uuid"]
         self._property_name = property_data["name"]
         self._property_aliases = property_data.get("aliases", [self._property_uuid])
         self._sensor_kind = sensor_kind
+        self._reservation_field = reservation_field
         self._attr_device_info = {
             "identifiers": {(DOMAIN, self._property_uuid)},
             "name": self._property_name,
             "manufacturer": "Hospitable",
         }
-        self._attr_unique_id = f"{DOMAIN}_{self._property_uuid}_{sensor_kind}"
-        self._attr_name = {
-            "current": "Current Guest",
-            "next": "Next Guest",
-            "upcoming": "Upcoming Guests",
-        }[sensor_kind]
+        self._attr_unique_id = self._unique_id()
+        self._attr_name = self._entity_name()
 
     @property
     def native_value(self) -> str | int | None:
@@ -76,6 +93,8 @@ class HospitableGuestSensor(
         reservation = self._selected_reservation()
         if reservation is None:
             return "None"
+        if self._reservation_field:
+            return _field_value(reservation, self._reservation_field)
         return (
             reservation.get("guest_name")
             or reservation.get("code")
@@ -107,6 +126,25 @@ class HospitableGuestSensor(
         if reservation:
             attrs.update(_public_reservation_attrs(reservation))
         return attrs
+
+    def _unique_id(self) -> str:
+        if self._reservation_field:
+            return (
+                f"{DOMAIN}_{self._property_uuid}_{self._sensor_kind}_"
+                f"{self._reservation_field}"
+            )
+        return f"{DOMAIN}_{self._property_uuid}_{self._sensor_kind}"
+
+    def _entity_name(self) -> str:
+        if self._reservation_field:
+            prefix = "Current" if self._sensor_kind == "current" else "Next"
+            field_name = RESERVATION_FIELD_SENSORS[self._reservation_field][0]
+            return f"{prefix} {field_name}"
+        return {
+            "current": "Current Guest",
+            "next": "Next Guest",
+            "upcoming": "Upcoming Guests",
+        }[self._sensor_kind]
 
     def _selected_reservation(self) -> dict[str, Any] | None:
         reservations = self._reservations_for_property()
@@ -171,6 +209,11 @@ def _public_reservation_attrs(reservation: dict[str, Any]) -> dict[str, Any]:
         "status": reservation.get("status"),
         "platform": reservation.get("platform"),
     }
+
+
+def _field_value(reservation: dict[str, Any], field: str) -> str:
+    value = reservation.get(RESERVATION_FIELD_SENSORS[field][1])
+    return str(value) if value else "None"
 
 
 def _is_cancelled(status: Any) -> bool:
