@@ -80,6 +80,7 @@ Use either:
 
 ## Change Log
 
+- 2026-08-06: Moved README notes and troubleshooting content to GitHub Wiki pages and linked them from the README.
 - 2026-08-06: Added MIT license and updated GitHub Actions checkout to Node 24-compatible v6.
 - 2026-08-06: Adjusted HACS validation workflow to ignore external `brands` and `topics` checks for custom repository use.
 - 2026-08-06: Changed icon/logo background to a full blue square so rendered PNG corners are not white.
