@@ -3,7 +3,7 @@
   <desc id="desc">Horizontal logo with a Home Assistant-blue square and a bold underlined O in Hospitable pink.</desc>
   <rect width="900" height="360" rx="72" fill="#F6FBFC"/>
   <g transform="translate(52 52) scale(0.5)">
-    <rect width="512" height="512" rx="96" fill="#03A9F4"/>
+    <rect width="512" height="512" fill="#03A9F4"/>
     <circle cx="256" cy="238" r="112" fill="none" stroke="#E83273" stroke-width="56"/>
     <path d="M164 394h184" fill="none" stroke="#E83273" stroke-width="44" stroke-linecap="round"/>
   </g>
@@ -12,4 +12,3 @@
     <text x="352" y="225" font-size="36" font-weight="600" fill="#255C4F">for Home Assistant</text>
   </g>
 </svg>
-
