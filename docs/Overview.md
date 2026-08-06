@@ -65,6 +65,21 @@ Use either:
 - `reservation_uuid`
 - `entity_id` for a Hospitable current or next guest sensor with a `reservation_uuid` attribute
 
+## Blueprint
+
+The repository includes a reusable automation blueprint at
+`blueprints/automation/hospitable_api/guest_first_arrival.yaml`.
+
+Use one automation instance per property/lock. Each instance watches a lock
+entity, compares the active Hospitable reservation UUID with an `input_text`
+helper, and sends a notification only once for each reservation.
+
+Blueprint import URL:
+
+```text
+https://raw.githubusercontent.com/peluke/hospitableHA/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
+```
+
 ## Security Notes
 
 - Do not store Hospitable tokens in source files, YAML examples, or Obsidian notes.
@@ -80,6 +95,7 @@ Use either:
 
 ## Change Log
 
+- 2026-08-06: Added a first-arrival automation blueprint for keypad unlock alerts per property.
 - 2026-08-06: Moved README notes and troubleshooting content to GitHub Wiki pages and linked them from the README.
 - 2026-08-06: Added MIT license and updated GitHub Actions checkout to Node 24-compatible v6.
 - 2026-08-06: Adjusted HACS validation workflow to ignore external `brands` and `topics` checks for custom repository use.

@@ -1,0 +1,93 @@
+blueprint:
+  name: Hospitable Guest First Arrival
+  description: >
+    Send a notification the first time the current Hospitable guest unlocks a
+    property door. Use one automation instance per property/lock.
+  domain: automation
+  source_url: https://github.com/peluke/hospitableHA/blob/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    lock_entity:
+      name: Door lock
+      description: Lock entity managed by SmartThings or another Home Assistant lock integration.
+      selector:
+        entity:
+          domain: lock
+    current_reservation_uuid_sensor:
+      name: Current reservation UUID sensor
+      description: Hospitable current reservation UUID sensor for this property.
+      selector:
+        entity:
+          domain: sensor
+    current_guest_sensor:
+      name: Current guest sensor
+      description: Hospitable current guest sensor for this property.
+      selector:
+        entity:
+          domain: sensor
+    last_arrived_reservation_uuid_helper:
+      name: Last arrived reservation helper
+      description: Input text helper used to remember the reservation already announced for this property.
+      selector:
+        entity:
+          domain: input_text
+    arrival_actions:
+      name: Arrival actions
+      description: Actions to run when the guest unlocks the door for the first time.
+      default: []
+      selector:
+        action:
+    require_keypad:
+      name: Require keypad unlock
+      description: Only alert when the lock event reports method=keypad.
+      default: true
+      selector:
+        boolean:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  lock_entity: !input lock_entity
+  current_reservation_uuid_sensor: !input current_reservation_uuid_sensor
+  current_guest_sensor: !input current_guest_sensor
+  last_arrived_reservation_uuid_helper: !input last_arrived_reservation_uuid_helper
+  require_keypad: !input require_keypad
+  reservation_uuid: "{{ states(current_reservation_uuid_sensor) }}"
+  guest_name: "{{ states(current_guest_sensor) }}"
+  lock_name: "{{ state_attr(lock_entity, 'friendly_name') or lock_entity }}"
+  code_name: "{{ trigger.to_state.attributes.code_name | default('', true) }}"
+  code_id: "{{ trigger.to_state.attributes.code_id | default('', true) }}"
+  unlock_method: "{{ trigger.to_state.attributes.method | default('', true) }}"
+  arrival_name: "{{ code_name if code_name else guest_name }}"
+  arrival_title: "Guest arrived"
+  arrival_message: >-
+    {{ arrival_name }} unlocked {{ lock_name }} for the first time.
+    Reservation: {{ reservation_uuid }}{% if code_id %}; lock code: {{ code_id }}{% endif %}.
+
+triggers:
+  - trigger: state
+    entity_id: !input lock_entity
+    to: "unlocked"
+
+conditions:
+  - condition: template
+    value_template: >-
+      {{ reservation_uuid not in ['unknown', 'unavailable', 'none', 'None', ''] }}
+  - condition: template
+    value_template: "{{ states(last_arrived_reservation_uuid_helper) != reservation_uuid }}"
+  - condition: template
+    value_template: "{{ not require_keypad or unlock_method == 'keypad' }}"
+
+actions:
+  - action: input_text.set_value
+    target:
+      entity_id: !input last_arrived_reservation_uuid_helper
+    data:
+      value: "{{ reservation_uuid }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ true }}"
+        sequence: !input arrival_actions

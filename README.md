@@ -82,3 +82,10 @@ actions:
 
 - [Notes](https://github.com/peluke/hospitableHA/wiki/Notes)
 - [Troubleshooting](https://github.com/peluke/hospitableHA/wiki/Troubleshooting)
+- [First Arrival Blueprint](https://github.com/peluke/hospitableHA/wiki/First-Arrival-Blueprint)
+
+Blueprint import URL:
+
+```text
+https://raw.githubusercontent.com/peluke/hospitableHA/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
+```
