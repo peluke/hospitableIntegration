@@ -77,7 +77,7 @@ helper, and sends a notification only once for each reservation.
 Blueprint import URL:
 
 ```text
-https://raw.githubusercontent.com/peluke/hospitableHA/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
+https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
 ```
 
 ## Security Notes
