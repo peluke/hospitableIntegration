@@ -42,10 +42,6 @@ This repository is structured for HACS as a custom integration repository:
 - GitHub Actions are included for HACS validation and Hassfest validation.
 - Local brand assets are included under `custom_components/hospitable_api/brand`.
 
-## Icon
-
-The integration icon is a simple Home Assistant-blue square with a bold underlined O in Hospitable pink. SVG source files live in `assets/`, with Home Assistant-ready PNG assets in `custom_components/hospitable_api/brand/`.
-
 Before publishing broadly:
 
 - Create a public GitHub repository.
