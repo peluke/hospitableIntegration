@@ -1,4 +1,4 @@
-"""Config flow for Hospitable API."""
+"""Config flow for Hospitable Integration."""
 
 from __future__ import annotations
 
@@ -19,12 +19,12 @@ from .const import (
 
 
 class HospitableConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a Hospitable API config flow."""
+    """Handle a Hospitable Integration config flow."""
 
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
-        """Set up Hospitable API from the UI."""
+        """Set up Hospitable Integration from the UI."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
@@ -38,10 +38,10 @@ class HospitableConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except HospitableApiError:
                 errors["base"] = "cannot_connect"
             else:
-                await self.async_set_unique_id("hospitable_api")
+                await self.async_set_unique_id("hospitable_integration")
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
-                    title="Hospitable API", data=normalized_input
+                    title="Hospitable Integration", data=normalized_input
                 )
 
         return self.async_show_form(

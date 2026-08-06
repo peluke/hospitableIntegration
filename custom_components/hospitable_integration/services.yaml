@@ -12,7 +12,7 @@ post_guest_message:
       required: false
       selector:
         entity:
-          integration: hospitable_api
+          integration: hospitable_integration
           domain: sensor
     reservation_uuid:
       name: Reservation UUID

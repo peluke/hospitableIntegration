@@ -1,4 +1,4 @@
-"""Sensors for Hospitable API."""
+"""Sensors for Hospitable Integration."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Hospitable API sensors."""
+    """Set up Hospitable Integration sensors."""
     coordinator: HospitableDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     entities: list[SensorEntity] = []
 

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Hospitable API",
+        "title": "Hospitable Integration",
         "description": "Enter a Hospitable Personal Access Token. The token is stored in Home Assistant's config entry storage.",
         "data": {
           "api_token": "Personal Access Token",
@@ -15,7 +15,7 @@
       "cannot_connect": "Unable to connect to Hospitable with this token."
     },
     "abort": {
-      "already_configured": "Hospitable API is already configured."
+      "already_configured": "Hospitable Integration is already configured."
     }
   }
 }

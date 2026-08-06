@@ -1,4 +1,4 @@
-"""Data update coordinator for Hospitable API."""
+"""Data update coordinator for Hospitable Integration."""
 
 from __future__ import annotations
 

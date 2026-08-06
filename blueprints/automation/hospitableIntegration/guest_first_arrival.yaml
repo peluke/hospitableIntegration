@@ -6,7 +6,7 @@ blueprint:
     property door. Use one automation instance per property/lock.
   domain: automation
   source_url: >-
-    https://github.com/peluke/hospitableIntegration/blob/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
+    https://github.com/peluke/hospitableIntegration/blob/main/blueprints/automation/hospitableIntegration/guest_first_arrival.yaml
   homeassistant:
     min_version: 2024.10.0
   input:

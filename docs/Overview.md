@@ -7,7 +7,7 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 ## File Locations
 
 - Source: `/Users/peluke/Documents/Hospitable HA Plugin`
-- Home Assistant integration: `/Users/peluke/Documents/Hospitable HA Plugin/custom_components/hospitable_api`
+- Home Assistant integration: `/Users/peluke/Documents/Hospitable HA Plugin/custom_components/hospitable_integration`
 - Obsidian documentation: `/Users/peluke/Documents/ObsidianSync/hospitable-ha-plugin`
 
 ## Setup
@@ -17,14 +17,14 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 1. In HACS, open **Custom repositories**.
 2. Add the GitHub repository URL.
 3. Select **Integration** as the category.
-4. Install **Hospitable API**.
+4. Install **Hospitable Integration**.
 5. Restart Home Assistant.
 6. Add the integration from **Settings -> Devices & services**.
 7. Enter a Hospitable Personal Access Token.
 
 ### Manual
 
-1. Copy `custom_components/hospitable_api` into Home Assistant's `custom_components` folder.
+1. Copy `custom_components/hospitable_integration` into Home Assistant's `custom_components` folder.
 2. Restart Home Assistant.
 3. Add the integration from **Settings -> Devices & services**.
 4. Enter a Hospitable Personal Access Token.
@@ -33,10 +33,10 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 ## HACS Readiness
 
 - Root `hacs.json` added.
-- Repository contains one integration under `custom_components/hospitable_api`.
+- Repository contains one integration under `custom_components/hospitable_integration`.
 - Manifest includes HACS-required metadata.
 - GitHub Actions validation is configured for `hacs/action@main` and `home-assistant/actions/hassfest@master`.
-- Local brand icon and logo assets are stored in `custom_components/hospitable_api/brand`, with editable SVG source files in `assets`.
+- Local brand icon and logo assets are stored in `custom_components/hospitable_integration/brand`, with editable SVG source files in `assets`.
 
 For default HACS repository inclusion later, the public GitHub repo will still need repository metadata, enabled issues, Home Assistant Brands submission, passing CI, and a GitHub release.
 
@@ -54,7 +54,7 @@ Each Hospitable property gets:
 
 ## Automation Service
 
-Service/action: `hospitable_api.post_guest_message`
+Service/action: `hospitable_integration.post_guest_message`
 
 Required data:
 
@@ -68,7 +68,7 @@ Use either:
 ## Blueprint
 
 The repository includes a reusable automation blueprint at
-`blueprints/automation/hospitable_api/guest_first_arrival.yaml`.
+`blueprints/automation/hospitableIntegration/guest_first_arrival.yaml`.
 
 Use one automation instance per property/lock. Each instance watches a lock
 entity, compares the active Hospitable reservation UUID with an `input_text`
@@ -77,7 +77,7 @@ helper, and sends a notification only once for each reservation.
 Blueprint import URL:
 
 ```text
-https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
+https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/automation/hospitableIntegration/guest_first_arrival.yaml
 ```
 
 ## Security Notes
@@ -88,13 +88,14 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Known Issues
 
-- Hospitable API field shapes can vary by booking platform and included relationships; the integration normalizes common variants.
+- Hospitable Integration field shapes can vary by booking platform and included relationships; the integration normalizes common variants.
 - Version `0.1.2` creates sensor entities for configured property IDs even when `/properties` returns a different primary ID shape.
 - Hospitable reservation queries require property UUIDs. Version `0.1.1` sends these as repeated `properties[]` query parameters.
 - The message endpoint is implemented as `POST /v2/reservations/{reservation_uuid}/messages` with a JSON `body` field based on current public API references. Confirm against live Hospitable docs if posting fails.
 
 ## Change Log
 
+- 2026-08-06: Renamed the Home Assistant domain to `hospitable_integration`, moved the integration package, moved the blueprint folder, and updated service/action examples.
 - 2026-08-06: Hardened API pagination, response normalization, service validation, first-arrival blueprint validation, sensor reservation indexing, config input cleanup, local tests, and reduced raw guest/API payload storage in coordinator state.
 - 2026-08-06: Added a first-arrival automation blueprint for keypad unlock alerts per property.
 - 2026-08-06: Moved README notes and troubleshooting content to GitHub Wiki pages and linked them from the README.

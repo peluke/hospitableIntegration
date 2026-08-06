@@ -1,4 +1,4 @@
-"""Hospitable API integration for Home Assistant."""
+"""Hospitable Integration for Home Assistant."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ SERVICE_POST_GUEST_MESSAGE_SCHEMA = vol.All(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Hospitable API from a config entry."""
+    """Set up Hospitable Integration from a config entry."""
     api = HospitableApiClient(
         session=async_get_clientsession(hass),
         api_token=entry.data[CONF_API_TOKEN],
@@ -56,7 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a Hospitable API config entry."""
+    """Unload a Hospitable Integration config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
@@ -89,7 +89,7 @@ def _build_post_guest_message_handler(hass: HomeAssistant):
         if coordinator is None:
             coordinators = list(hass.data.get(DOMAIN, {}).values())
             if not coordinators:
-                raise HomeAssistantError("Hospitable API integration is not loaded")
+                raise HomeAssistantError("Hospitable Integration is not loaded")
             coordinator = coordinators[0]
 
         try:

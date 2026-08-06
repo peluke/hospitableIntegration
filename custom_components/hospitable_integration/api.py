@@ -12,11 +12,11 @@ MAX_PAGES = 20
 
 
 class HospitableApiError(Exception):
-    """Raised when the Hospitable API request fails."""
+    """Raised when the Hospitable Integration request fails."""
 
 
 class HospitableApiClient:
-    """Small Hospitable API client."""
+    """Small Hospitable Integration client."""
 
     def __init__(self, session: ClientSession, api_token: str) -> None:
         self._session = session

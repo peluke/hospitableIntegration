@@ -1,4 +1,4 @@
-"""Pure normalization helpers for Hospitable API responses."""
+"""Pure normalization helpers for Hospitable Integration responses."""
 
 from __future__ import annotations
 
