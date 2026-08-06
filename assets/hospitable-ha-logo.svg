@@ -10,8 +10,8 @@
         <stop offset="1" stop-color="#255C4F"/>
       </linearGradient>
       <linearGradient id="accent" x1="168" y1="151" x2="352" y2="371" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#FFE3A3"/>
-        <stop offset="1" stop-color="#F5A623"/>
+        <stop offset="0" stop-color="#FF8DBA"/>
+        <stop offset="1" stop-color="#E83273"/>
       </linearGradient>
     </defs>
     <rect width="512" height="512" rx="112" fill="url(#background)"/>
@@ -31,4 +31,3 @@
     <text x="352" y="225" font-size="36" font-weight="600" fill="#255C4F">for Home Assistant</text>
   </g>
 </svg>
-
