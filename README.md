@@ -91,6 +91,18 @@ actions:
 
 Version `0.1.1` could create zero sensors when the configured property ID did not exactly match the primary ID returned by `/properties`, even though reservation requests succeeded. Upgrade to `0.1.2` or later. The integration now keeps all known property aliases and creates placeholder property devices for configured IDs when `/properties` does not return a matching record.
 
+### Entities appear but guest data is empty
+
+Upgrade to `0.1.5` or later. The integration now resolves configured property aliases back to Hospitable property UUIDs before querying reservations, parses Hospitable's `check_in`, `check_out`, `guests`, `properties`, and `reservation_status` response fields, and exposes diagnostic attributes on every sensor.
+
+Check these attributes on any Hospitable sensor:
+
+- `hospitable_reservation_count`
+- `hospitable_matched_reservation_count`
+- `hospitable_queried_property_uuids`
+- `hospitable_reservation_property_ids`
+- `hospitable_reservation_date_samples`
+
 ### Failed setup, will retry: 400 Bad Request
 
 Version `0.1.0` sent reservation property filters as a comma-separated `properties` query parameter. Hospitable expects repeated `properties[]` query parameters. Upgrade to `0.1.1` or later, restart Home Assistant, and reload the integration.

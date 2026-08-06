@@ -123,6 +123,7 @@ def _reservation_query_params(
         ("date_query", date_query),
         ("start_date", start_date),
         ("end_date", end_date),
+        ("per_page", "100"),
         ("include", "guest,properties,listings"),
     ]
     params.extend(("properties[]", uuid) for uuid in property_uuids)

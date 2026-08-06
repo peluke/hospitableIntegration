@@ -76,6 +76,7 @@ Use either:
 
 ## Change Log
 
+- 2026-08-06: Fixed empty guest sensors by querying reservations with resolved property UUIDs, parsing additional Hospitable reservation field shapes, requesting up to 100 reservations, and exposing diagnostic attributes.
 - 2026-08-06: Updated icon/logo accent from yellow to Hospitable-style pink.
 - 2026-08-06: Added original icon/logo brand assets inspired by the Hospitable and Home Assistant project contexts.
 - 2026-08-06: Fixed zero-entity setup by preserving property aliases and creating placeholder properties for configured IDs without matching `/properties` records.

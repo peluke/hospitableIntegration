@@ -89,6 +89,8 @@ class HospitableGuestSensor(
             return {
                 "property_uuid": self._property_uuid,
                 "property_name": self._property_name,
+                "property_aliases": self._property_aliases,
+                **self._diagnostic_attrs(),
                 "reservations": [
                     _public_reservation_attrs(item)
                     for item in self._upcoming_reservations()
@@ -99,6 +101,8 @@ class HospitableGuestSensor(
         attrs: dict[str, Any] = {
             "property_uuid": self._property_uuid,
             "property_name": self._property_name,
+            "property_aliases": self._property_aliases,
+            **self._diagnostic_attrs(),
         }
         if reservation:
             attrs.update(_public_reservation_attrs(reservation))
@@ -133,8 +137,28 @@ class HospitableGuestSensor(
             item
             for item in reservations
             if item.get("property_uuid") in self._property_aliases
-            and item.get("status") != "cancelled"
+            and not _is_cancelled(item.get("status"))
         ]
+
+    def _diagnostic_attrs(self) -> dict[str, Any]:
+        diagnostics = self.coordinator.data.get("diagnostics", {})
+        reservations: list[dict[str, Any]] = self.coordinator.data.get("reservations", [])
+        return {
+            "hospitable_property_count": diagnostics.get("property_count"),
+            "hospitable_reservation_count": diagnostics.get("reservation_count"),
+            "hospitable_queried_property_uuids": diagnostics.get("queried_property_uuids"),
+            "hospitable_reservation_property_ids": diagnostics.get("reservation_property_ids"),
+            "hospitable_reservation_statuses": diagnostics.get("reservation_statuses"),
+            "hospitable_matched_reservation_count": len(self._reservations_for_property()),
+            "hospitable_unmatched_reservation_samples": [
+                _public_reservation_attrs(item)
+                for item in reservations
+                if item.get("property_uuid") not in self._property_aliases
+            ][:3],
+            "hospitable_reservation_date_samples": diagnostics.get(
+                "reservation_date_samples"
+            ),
+        }
 
 
 def _public_reservation_attrs(reservation: dict[str, Any]) -> dict[str, Any]:
@@ -147,6 +171,10 @@ def _public_reservation_attrs(reservation: dict[str, Any]) -> dict[str, Any]:
         "status": reservation.get("status"),
         "platform": reservation.get("platform"),
     }
+
+
+def _is_cancelled(status: Any) -> bool:
+    return str(status or "").lower() in {"cancelled", "canceled", "not accepted"}
 
 
 def _parse_date(value: Any) -> date | None:

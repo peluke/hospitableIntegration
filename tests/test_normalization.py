@@ -50,6 +50,7 @@ def test_reservation_query_uses_hospitable_property_array_params():
 
     assert ("properties[]", "property-1") in params
     assert ("properties[]", "property-2") in params
+    assert ("per_page", "100") in params
     assert ("properties", "property-1,property-2") not in params
 
 
@@ -87,3 +88,23 @@ def test_synthetic_properties_for_missing_configured_ids():
             "raw": {},
         }
     ]
+
+
+def test_normalize_reservation_hospitable_public_api_shape():
+    item = {
+        "id": "reservation-1",
+        "platform": "airbnb",
+        "check_in": "2026-08-06T16:00:00Z",
+        "check_out": "2026-08-08T11:00:00Z",
+        "reservation_status": {"current": {"category": "accepted"}},
+        "guests": {"first_name": "Grace", "last_name": "Hopper"},
+        "properties": [{"id": "property-1", "name": "Cabin"}],
+    }
+
+    normalized = _normalize_reservation(item)
+
+    assert normalized["arrival_date"] == "2026-08-06T16:00:00Z"
+    assert normalized["departure_date"] == "2026-08-08T11:00:00Z"
+    assert normalized["status"] == "accepted"
+    assert normalized["guest_name"] == "Grace Hopper"
+    assert normalized["property_uuid"] == "property-1"

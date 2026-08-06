@@ -53,12 +53,24 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             properties = await self.api.async_get_properties()
             normalized_properties = [_normalize_property(item) for item in properties]
             if configured_property_uuids:
-                property_uuids = configured_property_uuids
                 normalized_properties = [
                     item
                     for item in normalized_properties
                     if _has_matching_alias(item, configured_property_uuids)
                 ]
+                property_uuids = [
+                    item["uuid"] for item in normalized_properties if item.get("uuid")
+                ]
+                property_uuids.extend(
+                    configured_id
+                    for configured_id in configured_property_uuids
+                    if configured_id
+                    not in {
+                        alias
+                        for item in normalized_properties
+                        for alias in item.get("aliases", [])
+                    }
+                )
                 normalized_properties.extend(
                     _synthetic_properties_for_missing_ids(
                         configured_property_uuids, normalized_properties
@@ -89,18 +101,18 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             normalized_reservations = _dedupe_reservations(
                 [_normalize_reservation(item) for item in reservations]
             )
-            if configured_property_uuids:
-                normalized_reservations = [
-                    item
-                    for item in normalized_reservations
-                    if item.get("property_uuid") in configured_property_uuids
-                ]
         except HospitableApiError as err:
             raise UpdateFailed(str(err)) from err
 
         return {
             "properties": normalized_properties,
             "reservations": normalized_reservations,
+            "diagnostics": _diagnostics(
+                normalized_properties,
+                normalized_reservations,
+                property_uuids,
+                configured_property_uuids,
+            ),
         }
 
 
@@ -159,9 +171,13 @@ def _normalize_property(item: dict[str, Any]) -> dict[str, Any]:
 
 def _normalize_reservation(item: dict[str, Any]) -> dict[str, Any]:
     attrs = _attributes(item)
-    guest = attrs.get("guest") or item.get("guest") or {}
+    guest = attrs.get("guest") or item.get("guest") or item.get("guests") or {}
     property_obj = (
-        attrs.get("property") or attrs.get("properties") or item.get("property") or {}
+        attrs.get("property")
+        or attrs.get("properties")
+        or item.get("property")
+        or item.get("properties")
+        or {}
     )
     property_uuid = (
         attrs.get("property_uuid")
@@ -170,23 +186,36 @@ def _normalize_reservation(item: dict[str, Any]) -> dict[str, Any]:
         or item.get("property_id")
         or _relationship_id(item, "property")
         or _relationship_id(item, "properties")
-        or property_obj.get("uuid")
-        or property_obj.get("id")
+        or _property_object_id(property_obj)
     )
     uuid = str(item.get("id") or item.get("uuid") or attrs.get("uuid") or "")
     arrival = (
-        attrs.get("arrival_date") or attrs.get("check_in") or item.get("arrival_date")
+        attrs.get("arrival_date")
+        or attrs.get("check_in")
+        or attrs.get("checkin_date")
+        or item.get("arrival_date")
+        or item.get("check_in")
+        or item.get("checkin_date")
     )
     departure = (
         attrs.get("departure_date")
         or attrs.get("check_out")
+        or attrs.get("checkout_date")
         or item.get("departure_date")
+        or item.get("check_out")
+        or item.get("checkout_date")
+    )
+    status = (
+        attrs.get("status")
+        or item.get("status")
+        or _reservation_status(item)
+        or _reservation_status(attrs)
     )
 
     return {
         "uuid": uuid,
         "code": attrs.get("code") or item.get("code"),
-        "status": attrs.get("status") or item.get("status"),
+        "status": status,
         "platform": attrs.get("platform") or item.get("platform"),
         "arrival_date": arrival,
         "departure_date": departure,
@@ -203,6 +232,29 @@ def _normalize_reservation(item: dict[str, Any]) -> dict[str, Any]:
 def _attributes(item: dict[str, Any]) -> dict[str, Any]:
     attrs = item.get("attributes")
     return attrs if isinstance(attrs, dict) else {}
+
+
+def _property_object_id(property_obj: Any) -> str | None:
+    if isinstance(property_obj, dict):
+        value = property_obj.get("uuid") or property_obj.get("id")
+        return str(value) if value else None
+    if isinstance(property_obj, list) and property_obj:
+        first = property_obj[0]
+        if isinstance(first, dict):
+            value = first.get("uuid") or first.get("id")
+            return str(value) if value else None
+    return None
+
+
+def _reservation_status(item: dict[str, Any]) -> str | None:
+    reservation_status = item.get("reservation_status")
+    if not isinstance(reservation_status, dict):
+        return None
+    current = reservation_status.get("current")
+    if isinstance(current, dict):
+        value = current.get("category") or current.get("status")
+        return str(value) if value else None
+    return str(current) if current else None
 
 
 def _property_aliases(item: dict[str, Any], attrs: dict[str, Any]) -> list[str]:
@@ -246,10 +298,43 @@ def _relationship_id(item: dict[str, Any], relationship_name: str) -> str | None
 def _guest_name(guest: Any) -> str | None:
     if not isinstance(guest, dict):
         return None
-    name = guest.get("name") or guest.get("full_name")
+    name = guest.get("name") or guest.get("full_name") or guest.get("display_name")
     if name:
         return str(name)
-    first = guest.get("first_name")
-    last = guest.get("last_name")
+    first = guest.get("first_name") or guest.get("first")
+    last = guest.get("last_name") or guest.get("last")
     full_name = " ".join(str(part) for part in (first, last) if part)
     return full_name or None
+
+
+def _diagnostics(
+    properties: list[dict[str, Any]],
+    reservations: list[dict[str, Any]],
+    queried_property_uuids: list[str],
+    configured_property_ids: list[str],
+) -> dict[str, Any]:
+    return {
+        "property_count": len(properties),
+        "reservation_count": len(reservations),
+        "queried_property_uuids": queried_property_uuids,
+        "configured_property_ids": configured_property_ids,
+        "reservation_property_ids": sorted(
+            {
+                item["property_uuid"]
+                for item in reservations
+                if item.get("property_uuid")
+            }
+        ),
+        "reservation_statuses": sorted(
+            {str(item["status"]) for item in reservations if item.get("status")}
+        ),
+        "reservation_date_samples": [
+            {
+                "arrival_date": item.get("arrival_date"),
+                "departure_date": item.get("departure_date"),
+                "property_uuid": item.get("property_uuid"),
+                "status": item.get("status"),
+            }
+            for item in reservations[:3]
+        ],
+    }
