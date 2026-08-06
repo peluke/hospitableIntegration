@@ -44,7 +44,7 @@ This repository is structured for HACS as a custom integration repository:
 
 ## Icon
 
-The integration icon is an original mark inspired by the project context: a guest reservation card, a pink guest badge, and automation nodes. SVG source files live in `assets/`, with Home Assistant-ready PNG assets in `custom_components/hospitable_api/brand/`.
+The integration icon is a simple Home Assistant-blue square with a bold underlined O in Hospitable pink. SVG source files live in `assets/`, with Home Assistant-ready PNG assets in `custom_components/hospitable_api/brand/`.
 
 Before publishing broadly:
 

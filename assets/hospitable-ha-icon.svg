@@ -1,58 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">Hospitable API Home Assistant icon</title>
-  <desc id="desc">Original icon showing a guest reservation card connected to smart-home automation nodes.</desc>
-  <defs>
-    <linearGradient id="background" x1="70" y1="54" x2="442" y2="461" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#00A6D6"/>
-      <stop offset="0.55" stop-color="#006F9F"/>
-      <stop offset="1" stop-color="#255C4F"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="154" y1="142" x2="342" y2="353" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FF8DBA"/>
-      <stop offset="1" stop-color="#E83273"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#002C3D" flood-opacity="0.26"/>
-    </filter>
-  </defs>
-
-  <rect width="512" height="512" rx="112" fill="url(#background)"/>
-
-  <g fill="none" stroke="#B7F3FF" stroke-width="16" stroke-linecap="round">
-    <path d="M102 158h54"/>
-    <path d="M356 158h54"/>
-    <path d="M256 105v44"/>
-    <path d="M119 351h60"/>
-    <path d="M333 351h60"/>
-  </g>
-
-  <g>
-    <circle cx="82" cy="158" r="22" fill="#B7F3FF"/>
-    <circle cx="430" cy="158" r="22" fill="#B7F3FF"/>
-    <circle cx="256" cy="82" r="22" fill="#B7F3FF"/>
-    <circle cx="93" cy="351" r="22" fill="#B7F3FF"/>
-    <circle cx="419" cy="351" r="22" fill="#B7F3FF"/>
-    <circle cx="82" cy="158" r="9" fill="#006F9F"/>
-    <circle cx="430" cy="158" r="9" fill="#006F9F"/>
-    <circle cx="256" cy="82" r="9" fill="#006F9F"/>
-    <circle cx="93" cy="351" r="9" fill="#006F9F"/>
-    <circle cx="419" cy="351" r="9" fill="#006F9F"/>
-  </g>
-
-  <g filter="url(#shadow)">
-    <rect x="132" y="126" width="248" height="276" rx="42" fill="#FFFFFF"/>
-    <path d="M132 168c0-23.2 18.8-42 42-42h164c23.2 0 42 18.8 42 42v48H132v-48Z" fill="#EAFBFF"/>
-    <path d="M186 126v-32M326 126v-32" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round"/>
-    <path d="M186 126v-32M326 126v-32" stroke="#B7F3FF" stroke-width="14" stroke-linecap="round"/>
-  </g>
-
-  <g>
-    <circle cx="216" cy="286" r="58" fill="url(#accent)"/>
-    <circle cx="198" cy="278" r="11" fill="#123D4B"/>
-    <circle cx="234" cy="278" r="11" fill="#123D4B"/>
-    <path d="M197 308c11 9 27 9 38 0" fill="none" stroke="#123D4B" stroke-width="11" stroke-linecap="round"/>
-    <path d="M274 287l31 31 65-76" fill="none" stroke="#255C4F" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M274 287l31 31 65-76" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
+  <desc id="desc">A Home Assistant-blue square with a bold underlined O in Hospitable pink.</desc>
+  <rect width="512" height="512" rx="96" fill="#03A9F4"/>
+  <circle cx="256" cy="238" r="112" fill="none" stroke="#E83273" stroke-width="56"/>
+  <path d="M164 394h184" fill="none" stroke="#E83273" stroke-width="44" stroke-linecap="round"/>
 </svg>
 

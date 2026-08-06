@@ -82,6 +82,7 @@ Use either:
 
 - 2026-08-06: Added MIT license and updated GitHub Actions checkout to Node 24-compatible v6.
 - 2026-08-06: Adjusted HACS validation workflow to ignore external `brands` and `topics` checks for custom repository use.
+- 2026-08-06: Reworked icon/logo into a Home Assistant-blue square with a bold underlined O in Hospitable pink.
 - 2026-08-06: Reworked icon/logo into a reservation-card design using the same teal, cyan, white, and pink color scheme.
 - 2026-08-06: Added current and next reservation detail sensors for UUID, code, check-in, check-out, status, and platform.
 - 2026-08-06: Fixed empty guest sensors by querying reservations with resolved property UUIDs, parsing additional Hospitable reservation field shapes, requesting up to 100 reservations, and exposing diagnostic attributes.
