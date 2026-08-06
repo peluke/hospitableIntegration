@@ -189,3 +189,66 @@ def test_extract_collection_ignores_non_dict_items():
     payload = {"data": [{"id": "one"}, "unexpected", {"id": "two"}]}
 
     assert api._extract_collection(payload) == [{"id": "one"}, {"id": "two"}]
+
+
+def test_task_query_uses_hospitable_property_array_params():
+    params = api._task_query_params(
+        start_date="2026-08-06",
+        end_date="2026-09-06",
+        property_uuids=["property-1", "property-2"],
+    )
+
+    assert ("properties[]", "property-1") in params
+    assert ("properties[]", "property-2") in params
+    assert ("per_page", "100") in params
+
+
+def test_normalize_task_common_shape():
+    item = {
+        "id": "task-1",
+        "title": "Cleaning",
+        "status": "open",
+        "acceptance_status": "pending",
+        "due_date": "2026-08-13T11:00:00Z",
+        "properties": [{"id": "property-1", "name": "Manzanita"}],
+        "reservation": {"id": "reservation-1"},
+        "teammate": {"id": "teammate-1", "name": "Charlotte"},
+    }
+
+    normalized = normalization.normalize_task(item)
+
+    assert normalized["uuid"] == "task-1"
+    assert normalized["title"] == "Cleaning"
+    assert normalized["assignment_status"] == "pending"
+    assert normalized["property_uuid"] == "property-1"
+    assert normalized["reservation_uuid"] == "reservation-1"
+    assert normalized["assignee_name"] == "Charlotte"
+
+
+def test_checkout_tasks_by_property_matches_checkout_dates():
+    properties = [{"uuid": "property-1", "aliases": ["property-1", "12345"]}]
+    reservations = [
+        {
+            "uuid": "reservation-1",
+            "property_uuid": "12345",
+            "departure_date": "2026-08-13T11:00:00Z",
+        }
+    ]
+    tasks = [
+        {
+            "uuid": "task-1",
+            "property_uuid": "property-1",
+            "due_date": "2026-08-13T10:00:00Z",
+        },
+        {
+            "uuid": "task-2",
+            "property_uuid": "property-1",
+            "due_date": "2026-08-14T10:00:00Z",
+        },
+    ]
+
+    assert normalization.checkout_tasks_by_property(
+        properties,
+        reservations,
+        tasks,
+    ) == {"property-1": [tasks[0]]}

@@ -21,11 +21,13 @@ from .const import (
 )
 from .normalization import (
     aliases_for_properties,
+    checkout_tasks_by_property,
     dedupe_reservations,
     dedupe_strings,
     has_matching_alias,
     normalize_property,
     normalize_reservation,
+    normalize_task,
     reservations_by_property,
     synthetic_properties_for_missing_ids,
 )
@@ -109,6 +111,12 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             normalized_reservations = dedupe_reservations(
                 [normalize_reservation(item) for item in reservations]
             )
+            tasks = await self.api.async_get_tasks(
+                start_date=today.isoformat(),
+                end_date=end_date.isoformat(),
+                property_uuids=property_uuids,
+            )
+            normalized_tasks = [normalize_task(item) for item in tasks]
         except HospitableApiError as err:
             raise UpdateFailed(str(err)) from err
 
@@ -118,9 +126,16 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "reservations_by_property": reservations_by_property(
                 normalized_properties, normalized_reservations
             ),
+            "tasks": normalized_tasks,
+            "checkout_tasks_by_property": checkout_tasks_by_property(
+                normalized_properties,
+                normalized_reservations,
+                normalized_tasks,
+            ),
             "diagnostics": _diagnostics(
                 normalized_properties,
                 normalized_reservations,
+                normalized_tasks,
                 property_uuids,
                 configured_property_uuids,
             ),
@@ -134,12 +149,14 @@ def _parse_property_uuids(raw_value: str) -> list[str]:
 def _diagnostics(
     properties: list[dict[str, Any]],
     reservations: list[dict[str, Any]],
+    tasks: list[dict[str, Any]],
     queried_property_uuids: list[str],
     configured_property_ids: list[str],
 ) -> dict[str, Any]:
     return {
         "property_count": len(properties),
         "reservation_count": len(reservations),
+        "task_count": len(tasks),
         "queried_property_uuids": queried_property_uuids,
         "configured_property_ids": configured_property_ids,
         "reservation_property_ids": sorted(
@@ -161,4 +178,14 @@ def _diagnostics(
             }
             for item in reservations[:3]
         ],
+        "task_statuses": sorted(
+            {str(item["status"]) for item in tasks if item.get("status")}
+        ),
+        "task_assignment_statuses": sorted(
+            {
+                str(item["assignment_status"])
+                for item in tasks
+                if item.get("assignment_status")
+            }
+        ),
     }

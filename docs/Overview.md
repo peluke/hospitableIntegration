@@ -49,6 +49,8 @@ Each Hospitable property gets:
 - `Current Guest`: current in-house guest, with reservation details in attributes.
 - `Next Guest`: next arrival, with reservation details in attributes.
 - `Upcoming Guests`: count of upcoming reservations, with reservation list in attributes.
+- `Checkout Tasks`: count of tasks that land on known checkout dates.
+- `Checkout Task Alert`: `on` when a checkout-day task is pending, unaccepted, declined, or rejected.
 - Current reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
 - Next reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
 
@@ -95,6 +97,7 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-06: Added checkout-day task fetches and per-property checkout task sensors for cleaning assignment coverage.
 - 2026-08-06: Renamed the Home Assistant domain to `hospitable_integration`, moved the integration package, moved the blueprint folder, and updated service/action examples.
 - 2026-08-06: Hardened API pagination, response normalization, service validation, first-arrival blueprint validation, sensor reservation indexing, config input cleanup, local tests, and reduced raw guest/API payload storage in coordinator state.
 - 2026-08-06: Added a first-arrival automation blueprint for keypad unlock alerts per property.

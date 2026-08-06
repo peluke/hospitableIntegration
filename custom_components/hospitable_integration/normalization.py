@@ -133,6 +133,135 @@ def normalize_reservation(item: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def normalize_task(item: dict[str, Any]) -> dict[str, Any]:
+    """Normalize a Hospitable task across known response shapes."""
+    attrs = _attributes(item)
+    property_obj = _first_dict(
+        attrs.get("property")
+        or attrs.get("properties")
+        or item.get("property")
+        or item.get("properties")
+    )
+    reservation_obj = _first_dict(
+        attrs.get("reservation")
+        or attrs.get("reservations")
+        or item.get("reservation")
+        or item.get("reservations")
+    )
+    assignee = _first_dict(
+        attrs.get("assignee")
+        or attrs.get("teammate")
+        or attrs.get("assigned_to")
+        or item.get("assignee")
+        or item.get("teammate")
+        or item.get("assigned_to")
+    )
+    property_uuid = (
+        attrs.get("property_uuid")
+        or attrs.get("property_id")
+        or item.get("property_uuid")
+        or item.get("property_id")
+        or _relationship_id(item, "property")
+        or _relationship_id(item, "properties")
+        or _property_object_id(property_obj)
+    )
+    reservation_uuid = (
+        attrs.get("reservation_uuid")
+        or attrs.get("reservation_id")
+        or item.get("reservation_uuid")
+        or item.get("reservation_id")
+        or _relationship_id(item, "reservation")
+        or _relationship_id(item, "reservations")
+        or reservation_obj.get("uuid")
+        or reservation_obj.get("id")
+    )
+    due_date = (
+        attrs.get("due_date")
+        or attrs.get("scheduled_date")
+        or attrs.get("start_date")
+        or attrs.get("starts_at")
+        or attrs.get("date")
+        or item.get("due_date")
+        or item.get("scheduled_date")
+        or item.get("start_date")
+        or item.get("starts_at")
+        or item.get("date")
+    )
+    status = (
+        attrs.get("status")
+        or attrs.get("state")
+        or item.get("status")
+        or item.get("state")
+    )
+    assignment_status = (
+        attrs.get("assignment_status")
+        or attrs.get("acceptance_status")
+        or attrs.get("assignee_status")
+        or attrs.get("teammate_status")
+        or item.get("assignment_status")
+        or item.get("acceptance_status")
+        or item.get("assignee_status")
+        or item.get("teammate_status")
+        or assignee.get("assignment_status")
+        or assignee.get("acceptance_status")
+        or assignee.get("status")
+    )
+
+    return {
+        "uuid": str(item.get("id") or item.get("uuid") or attrs.get("uuid") or ""),
+        "title": (
+            attrs.get("title")
+            or attrs.get("name")
+            or attrs.get("summary")
+            or item.get("title")
+            or item.get("name")
+            or item.get("summary")
+            or "Task"
+        ),
+        "status": str(status) if status else None,
+        "assignment_status": str(assignment_status) if assignment_status else None,
+        "due_date": due_date,
+        "property_uuid": str(property_uuid) if property_uuid else None,
+        "property_name": property_obj.get("name"),
+        "reservation_uuid": str(reservation_uuid) if reservation_uuid else None,
+        "assignee_name": _guest_name(assignee),
+        "assignee_uuid": _object_identifier(assignee),
+    }
+
+
+def checkout_tasks_by_property(
+    properties: list[dict[str, Any]],
+    reservations: list[dict[str, Any]],
+    tasks: list[dict[str, Any]],
+) -> dict[str, list[dict[str, Any]]]:
+    """Group tasks that land on a checkout date by canonical property UUID."""
+    indexed: dict[str, list[dict[str, Any]]] = {
+        property_data["uuid"]: []
+        for property_data in properties
+        if property_data.get("uuid")
+    }
+    aliases_by_property = _aliases_by_property(properties)
+    checkout_dates_by_property = _checkout_dates_by_property(
+        properties,
+        reservations,
+        aliases_by_property,
+    )
+
+    for task in tasks:
+        task_date = _date_text(task.get("due_date"))
+        task_property_uuid = task.get("property_uuid")
+        if not task_date or not task_property_uuid:
+            continue
+        for canonical_uuid, aliases in aliases_by_property.items():
+            if task_property_uuid not in aliases:
+                continue
+            if task_date in checkout_dates_by_property.get(canonical_uuid, set()):
+                indexed.setdefault(canonical_uuid, []).append(task)
+            break
+
+    return indexed
+
+
 def reservations_by_property(
     properties: list[dict[str, Any]], reservations: list[dict[str, Any]]
 ) -> dict[str, list[dict[str, Any]]]:
@@ -158,6 +287,42 @@ def reservations_by_property(
         if canonical_uuid:
             indexed.setdefault(canonical_uuid, []).append(reservation)
     return indexed
+
+
+def _aliases_by_property(properties: list[dict[str, Any]]) -> dict[str, set[str]]:
+    return {
+        property_data["uuid"]: set(property_data.get("aliases", []))
+        for property_data in properties
+        if property_data.get("uuid")
+    }
+
+
+def _checkout_dates_by_property(
+    properties: list[dict[str, Any]],
+    reservations: list[dict[str, Any]],
+    aliases_by_property: dict[str, set[str]],
+) -> dict[str, set[str]]:
+    checkout_dates: dict[str, set[str]] = {
+        property_data["uuid"]: set()
+        for property_data in properties
+        if property_data.get("uuid")
+    }
+    for reservation in reservations:
+        property_uuid = reservation.get("property_uuid")
+        departure_date = _date_text(reservation.get("departure_date"))
+        if not property_uuid or not departure_date:
+            continue
+        for canonical_uuid, aliases in aliases_by_property.items():
+            if property_uuid in aliases:
+                checkout_dates.setdefault(canonical_uuid, set()).add(departure_date)
+                break
+    return checkout_dates
+
+
+def _date_text(value: Any) -> str | None:
+    if not value:
+        return None
+    return str(value)[:10]
 
 
 def _attributes(item: dict[str, Any]) -> dict[str, Any]:
@@ -246,3 +411,8 @@ def _guest_name(guest: Any) -> str | None:
     last = guest.get("last_name") or guest.get("last")
     full_name = " ".join(str(part) for part in (first, last) if part)
     return full_name or None
+
+
+def _object_identifier(value: dict[str, Any]) -> str | None:
+    identifier = value.get("uuid") or value.get("id")
+    return str(identifier) if identifier else None

@@ -43,6 +43,21 @@ class HospitableApiClient:
         )
         return await self._request_collection("GET", "/reservations", params=params)
 
+    async def async_get_tasks(
+        self,
+        *,
+        start_date: str,
+        end_date: str,
+        property_uuids: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Return tasks for a date range."""
+        params = _task_query_params(
+            start_date=start_date,
+            end_date=end_date,
+            property_uuids=property_uuids or [],
+        )
+        return await self._request_collection("GET", "/tasks", params=params)
+
     async def async_post_guest_message(self, reservation_uuid: str, message: str) -> None:
         """Post a message to the guest conversation for a reservation."""
         await self._request(
@@ -181,6 +196,22 @@ def _reservation_query_params(
         ("end_date", end_date),
         ("per_page", str(DEFAULT_PAGE_SIZE)),
         ("include", "guest,properties,listings"),
+    ]
+    params.extend(("properties[]", uuid) for uuid in property_uuids)
+    return params
+
+
+def _task_query_params(
+    *,
+    start_date: str,
+    end_date: str,
+    property_uuids: list[str],
+) -> list[tuple[str, str]]:
+    params = [
+        ("start_date", start_date),
+        ("end_date", end_date),
+        ("per_page", str(DEFAULT_PAGE_SIZE)),
+        ("include", "assignee,teammate,property,reservation"),
     ]
     params.extend(("properties[]", uuid) for uuid in property_uuids)
     return params

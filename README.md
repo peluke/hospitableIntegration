@@ -11,6 +11,7 @@ Custom Home Assistant integration for Hospitable Public API v2.
 - `hospitable_integration.post_guest_message` service/action for automations.
 - Personal Access Token setup through the Home Assistant UI.
 - Paginated reservation/property fetches with normalized common Hospitable response shapes.
+- Checkout-day task sensors for cleaning assignment coverage.
 
 ## Installation
 
@@ -55,6 +56,23 @@ External `home-assistant/brands` submission is optional and only needed for HACS
 default repository inclusion.
 
 ## Example Automation
+
+Checkout task assignment alerts are exposed per property with the `Checkout
+Task Alert` sensor. The sensor turns `on` when a checkout-day task is pending,
+unaccepted, declined, or rejected.
+
+```yaml
+alias: Cleaning task needs attention
+triggers:
+  - trigger: state
+    entity_id: sensor.hospitable_manzanita_checkout_task_alert
+    to: "on"
+actions:
+  - action: notify.mobile_app_your_phone
+    data:
+      title: Cleaning task needs attention
+      message: "{{ state_attr(trigger.entity_id, 'alerts') }}"
+```
 
 ```yaml
 alias: Message current guest when door unlocks

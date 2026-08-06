@@ -40,6 +40,8 @@ async def async_setup_entry(
                 HospitableGuestSensor(coordinator, property_data, "current"),
                 HospitableGuestSensor(coordinator, property_data, "next"),
                 HospitableGuestSensor(coordinator, property_data, "upcoming"),
+                HospitableGuestSensor(coordinator, property_data, "checkout_tasks"),
+                HospitableGuestSensor(coordinator, property_data, "checkout_task_alert"),
             ]
         )
         for sensor_kind in ("current", "next"):
@@ -89,6 +91,10 @@ class HospitableGuestSensor(
         """Return the sensor state."""
         if self._sensor_kind == "upcoming":
             return len(self._upcoming_reservations())
+        if self._sensor_kind == "checkout_tasks":
+            return len(self._checkout_tasks())
+        if self._sensor_kind == "checkout_task_alert":
+            return "on" if self._checkout_task_alerts() else "off"
 
         reservation = self._selected_reservation()
         if reservation is None:
@@ -113,6 +119,20 @@ class HospitableGuestSensor(
                 "reservations": [
                     _public_reservation_attrs(item)
                     for item in self._upcoming_reservations()
+                ],
+            }
+            if include_diagnostics:
+                attrs.update(self._diagnostic_attrs())
+            return attrs
+
+        if self._sensor_kind in {"checkout_tasks", "checkout_task_alert"}:
+            attrs = {
+                "property_uuid": self._property_uuid,
+                "property_name": self._property_name,
+                "property_aliases": self._property_aliases,
+                "tasks": [_public_task_attrs(item) for item in self._checkout_tasks()],
+                "alerts": [
+                    _public_task_attrs(item) for item in self._checkout_task_alerts()
                 ],
             }
             if include_diagnostics:
@@ -148,6 +168,8 @@ class HospitableGuestSensor(
             "current": "Current Guest",
             "next": "Next Guest",
             "upcoming": "Upcoming Guests",
+            "checkout_tasks": "Checkout Tasks",
+            "checkout_task_alert": "Checkout Task Alert",
         }[self._sensor_kind]
 
     def _selected_reservation(self) -> dict[str, Any] | None:
@@ -183,15 +205,36 @@ class HospitableGuestSensor(
             if not _is_cancelled(item.get("status"))
         ]
 
+    def _checkout_tasks(self) -> list[dict[str, Any]]:
+        checkout_tasks_by_property: dict[str, list[dict[str, Any]]] = (
+            self.coordinator.data.get("checkout_tasks_by_property", {})
+        )
+        return sorted(
+            checkout_tasks_by_property.get(self._property_uuid, []),
+            key=lambda item: item.get("due_date") or "",
+        )
+
+    def _checkout_task_alerts(self) -> list[dict[str, Any]]:
+        return [
+            item
+            for item in self._checkout_tasks()
+            if _is_task_assignment_alert(item)
+        ]
+
     def _diagnostic_attrs(self) -> dict[str, Any]:
         diagnostics = self.coordinator.data.get("diagnostics", {})
         reservations: list[dict[str, Any]] = self.coordinator.data.get("reservations", [])
         return {
             "hospitable_property_count": diagnostics.get("property_count"),
             "hospitable_reservation_count": diagnostics.get("reservation_count"),
+            "hospitable_task_count": diagnostics.get("task_count"),
             "hospitable_queried_property_uuids": diagnostics.get("queried_property_uuids"),
             "hospitable_reservation_property_ids": diagnostics.get("reservation_property_ids"),
             "hospitable_reservation_statuses": diagnostics.get("reservation_statuses"),
+            "hospitable_task_statuses": diagnostics.get("task_statuses"),
+            "hospitable_task_assignment_statuses": diagnostics.get(
+                "task_assignment_statuses"
+            ),
             "hospitable_matched_reservation_count": len(self._reservations_for_property()),
             "hospitable_unmatched_reservation_samples": [
                 _public_reservation_attrs(item)
@@ -216,6 +259,20 @@ def _public_reservation_attrs(reservation: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _public_task_attrs(task: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "task_uuid": task.get("uuid"),
+        "title": task.get("title"),
+        "status": task.get("status"),
+        "assignment_status": task.get("assignment_status"),
+        "due_date": task.get("due_date"),
+        "property_uuid": task.get("property_uuid"),
+        "reservation_uuid": task.get("reservation_uuid"),
+        "assignee_name": task.get("assignee_name"),
+        "assignee_uuid": task.get("assignee_uuid"),
+    }
+
+
 def _field_value(reservation: dict[str, Any], field: str) -> str:
     value = reservation.get(RESERVATION_FIELD_SENSORS[field][1])
     return str(value) if value else "None"
@@ -223,6 +280,23 @@ def _field_value(reservation: dict[str, Any], field: str) -> str:
 
 def _is_cancelled(status: Any) -> bool:
     return str(status or "").lower() in {"cancelled", "canceled", "not accepted"}
+
+
+def _is_task_assignment_alert(task: dict[str, Any]) -> bool:
+    status = str(task.get("status") or "").lower()
+    assignment_status = str(task.get("assignment_status") or "").lower()
+    if status in {"completed", "complete", "done", "cancelled", "canceled"}:
+        return False
+    if assignment_status in {"accepted", "completed", "complete", "done"}:
+        return False
+    return assignment_status in {
+        "",
+        "pending",
+        "unaccepted",
+        "not accepted",
+        "declined",
+        "rejected",
+    }
 
 
 def _parse_date(value: Any) -> date | None:
