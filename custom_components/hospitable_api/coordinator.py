@@ -57,8 +57,13 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 normalized_properties = [
                     item
                     for item in normalized_properties
-                    if item["uuid"] in configured_property_uuids
+                    if _has_matching_alias(item, configured_property_uuids)
                 ]
+                normalized_properties.extend(
+                    _synthetic_properties_for_missing_ids(
+                        configured_property_uuids, normalized_properties
+                    )
+                )
             else:
                 property_uuids = [
                     item["uuid"] for item in normalized_properties if item.get("uuid")
@@ -116,13 +121,38 @@ def _dedupe_reservations(reservations: list[dict[str, Any]]) -> list[dict[str, A
     return deduped
 
 
+def _has_matching_alias(property_data: dict[str, Any], values: list[str]) -> bool:
+    return any(alias in values for alias in property_data.get("aliases", []))
+
+
+def _synthetic_properties_for_missing_ids(
+    configured_ids: list[str], properties: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    existing_aliases = {
+        alias for property_data in properties for alias in property_data.get("aliases", [])
+    }
+    return [
+        {
+            "uuid": configured_id,
+            "name": f"Hospitable {configured_id}",
+            "address": None,
+            "aliases": [configured_id],
+            "raw": {},
+        }
+        for configured_id in configured_ids
+        if configured_id not in existing_aliases
+    ]
+
+
 def _normalize_property(item: dict[str, Any]) -> dict[str, Any]:
     attrs = _attributes(item)
-    uuid = str(item.get("id") or item.get("uuid") or attrs.get("uuid") or "")
+    aliases = _property_aliases(item, attrs)
+    uuid = aliases[0] if aliases else ""
     return {
         "uuid": uuid,
         "name": attrs.get("name") or item.get("name") or uuid,
         "address": attrs.get("address") or item.get("address"),
+        "aliases": aliases,
         "raw": item,
     }
 
@@ -135,7 +165,9 @@ def _normalize_reservation(item: dict[str, Any]) -> dict[str, Any]:
     )
     property_uuid = (
         attrs.get("property_uuid")
+        or attrs.get("property_id")
         or item.get("property_uuid")
+        or item.get("property_id")
         or _relationship_id(item, "property")
         or _relationship_id(item, "properties")
         or property_obj.get("uuid")
@@ -171,6 +203,25 @@ def _normalize_reservation(item: dict[str, Any]) -> dict[str, Any]:
 def _attributes(item: dict[str, Any]) -> dict[str, Any]:
     attrs = item.get("attributes")
     return attrs if isinstance(attrs, dict) else {}
+
+
+def _property_aliases(item: dict[str, Any], attrs: dict[str, Any]) -> list[str]:
+    values = [
+        attrs.get("uuid"),
+        item.get("uuid"),
+        item.get("id"),
+        attrs.get("id"),
+        attrs.get("property_id"),
+        item.get("property_id"),
+    ]
+    aliases: list[str] = []
+    for value in values:
+        if value is None:
+            continue
+        alias = str(value)
+        if alias and alias not in aliases:
+            aliases.append(alias)
+    return aliases
 
 
 def _relationship_id(item: dict[str, Any], relationship_name: str) -> str | None:

@@ -3,16 +3,22 @@
 from custom_components.hospitable_api.api import _reservation_query_params
 from custom_components.hospitable_api.coordinator import (
     _dedupe_reservations,
+    _has_matching_alias,
     _normalize_property,
     _normalize_reservation,
+    _synthetic_properties_for_missing_ids,
 )
 
 
 def test_normalize_property_json_api_shape():
-    item = {"id": "property-1", "attributes": {"name": "Cabin"}}
+    item = {
+        "id": "numeric-1",
+        "attributes": {"uuid": "property-1", "name": "Cabin"},
+    }
 
     assert _normalize_property(item)["uuid"] == "property-1"
     assert _normalize_property(item)["name"] == "Cabin"
+    assert _normalize_property(item)["aliases"] == ["property-1", "numeric-1"]
 
 
 def test_normalize_reservation_json_api_shape():
@@ -57,4 +63,27 @@ def test_dedupe_reservations_by_uuid():
     assert _dedupe_reservations(reservations) == [
         {"uuid": "reservation-1", "date_query": "checkin"},
         {"uuid": "reservation-2", "date_query": "checkout"},
+    ]
+
+
+def test_matching_property_aliases():
+    property_data = {"uuid": "property-uuid", "aliases": ["property-uuid", "12345"]}
+
+    assert _has_matching_alias(property_data, ["12345"])
+    assert not _has_matching_alias(property_data, ["67890"])
+
+
+def test_synthetic_properties_for_missing_configured_ids():
+    properties = [{"uuid": "property-1", "aliases": ["property-1", "12345"]}]
+
+    assert _synthetic_properties_for_missing_ids(
+        ["12345", "property-2"], properties
+    ) == [
+        {
+            "uuid": "property-2",
+            "name": "Hospitable property-2",
+            "address": None,
+            "aliases": ["property-2"],
+            "raw": {},
+        }
     ]

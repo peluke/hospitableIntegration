@@ -53,6 +53,7 @@ class HospitableGuestSensor(
         super().__init__(coordinator)
         self._property_uuid = property_data["uuid"]
         self._property_name = property_data["name"]
+        self._property_aliases = property_data.get("aliases", [self._property_uuid])
         self._sensor_kind = sensor_kind
         self._attr_device_info = {
             "identifiers": {(DOMAIN, self._property_uuid)},
@@ -131,7 +132,7 @@ class HospitableGuestSensor(
         return [
             item
             for item in reservations
-            if item.get("property_uuid") == self._property_uuid
+            if item.get("property_uuid") in self._property_aliases
             and item.get("status") != "cancelled"
         ]
 

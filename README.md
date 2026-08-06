@@ -82,6 +82,10 @@ actions:
 
 ## Troubleshooting
 
+### Setup succeeds but no entities appear
+
+Version `0.1.1` could create zero sensors when the configured property ID did not exactly match the primary ID returned by `/properties`, even though reservation requests succeeded. Upgrade to `0.1.2` or later. The integration now keeps all known property aliases and creates placeholder property devices for configured IDs when `/properties` does not return a matching record.
+
 ### Failed setup, will retry: 400 Bad Request
 
 Version `0.1.0` sent reservation property filters as a comma-separated `properties` query parameter. Hospitable expects repeated `properties[]` query parameters. Upgrade to `0.1.1` or later, restart Home Assistant, and reload the integration.
