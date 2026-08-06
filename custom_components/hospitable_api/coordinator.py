@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .api import HospitableApiClient, HospitableApiError
+from .api import MAX_TASK_DETAIL_FETCHES, HospitableApiClient, HospitableApiError
 from .const import (
     CONF_LOOKAHEAD_DAYS,
     CONF_PROPERTY_UUIDS,
@@ -122,6 +122,11 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 property_uuids=property_uuids,
             )
             normalized_tasks = [normalize_task(item) for item in tasks]
+            normalized_tasks = await self._async_enrich_checkout_tasks(
+                normalized_properties,
+                normalized_reservations,
+                normalized_tasks,
+            )
         except HospitableApiError as err:
             task_error = str(err)
             normalized_tasks = []
@@ -148,6 +153,37 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 task_error,
             ),
         }
+
+    async def _async_enrich_checkout_tasks(
+        self,
+        properties: list[dict[str, Any]],
+        reservations: list[dict[str, Any]],
+        tasks: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Fetch details for checkout-date tasks only."""
+        checkout_tasks = checkout_tasks_by_property(properties, reservations, tasks)
+        checkout_task_uuids = {
+            task["uuid"]
+            for property_tasks in checkout_tasks.values()
+            for task in property_tasks
+            if task.get("uuid")
+        }
+        if not checkout_task_uuids:
+            return tasks
+
+        detail_by_uuid: dict[str, dict[str, Any] | None] = {}
+        for task in tasks:
+            task_uuid = task.get("uuid")
+            if not task_uuid or task_uuid not in checkout_task_uuids:
+                continue
+            if len(detail_by_uuid) >= MAX_TASK_DETAIL_FETCHES:
+                break
+            detail_by_uuid[str(task_uuid)] = await _async_task_detail(self.api, task)
+
+        return [
+            _merge_task_detail(task, detail_by_uuid.get(str(task.get("uuid"))))
+            for task in tasks
+        ]
 
 
 def _parse_property_uuids(raw_value: str) -> list[str]:
@@ -198,4 +234,34 @@ def _diagnostics(
                 if item.get("assignment_status")
             }
         ),
+        "task_unknown_assignment_status_count": sum(
+            1 for item in tasks if not item.get("assignment_status")
+        ),
     }
+
+
+async def _async_task_detail(
+    api: HospitableApiClient,
+    task: dict[str, Any],
+) -> dict[str, Any] | None:
+    task_uuid = task.get("uuid")
+    if not task_uuid:
+        return None
+    try:
+        return normalize_task(await api.async_get_task(str(task_uuid)))
+    except HospitableApiError as err:
+        _LOGGER.debug("Failed to fetch Hospitable task detail for %s: %s", task_uuid, err)
+        return None
+
+
+def _merge_task_detail(
+    task: dict[str, Any],
+    detail: dict[str, Any] | None,
+) -> dict[str, Any]:
+    if detail is None:
+        return task
+    merged = dict(task)
+    for key, value in detail.items():
+        if value not in (None, ""):
+            merged[key] = value
+    return merged

@@ -9,6 +9,7 @@ from aiohttp import ClientError, ClientResponseError, ClientSession
 API_BASE_URL = "https://public.api.hospitable.com/v2"
 DEFAULT_PAGE_SIZE = 100
 MAX_PAGES = 20
+MAX_TASK_DETAIL_FETCHES = 50
 
 
 class HospitableApiError(Exception):
@@ -57,6 +58,14 @@ class HospitableApiClient:
             property_uuids=property_uuids or [],
         )
         return await self._request_collection("GET", "/tasks", params=params)
+
+    async def async_get_task(self, task_uuid: str) -> dict[str, Any]:
+        """Return details for one task."""
+        payload = await self._request("GET", f"/tasks/{task_uuid}")
+        items = _extract_collection(payload)
+        if items:
+            return items[0]
+        return payload if isinstance(payload, dict) else {}
 
     async def async_post_guest_message(self, reservation_uuid: str, message: str) -> None:
         """Post a message to the guest conversation for a reservation."""

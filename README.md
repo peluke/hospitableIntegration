@@ -59,7 +59,8 @@ default repository inclusion.
 
 Checkout task assignment alerts are exposed per property with the `Checkout
 Task Alert` sensor. The sensor turns `on` when a checkout-day task is pending,
-unaccepted, declined, or rejected.
+unaccepted, declined, or rejected. Tasks with unknown assignment status are
+listed in attributes but do not trigger the alert.
 
 If the Hospitable task endpoint is unavailable for the token, the task sensors
 still load as `0`/`off` and expose the API error in the

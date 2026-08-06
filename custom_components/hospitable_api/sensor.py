@@ -236,6 +236,9 @@ class HospitableGuestSensor(
             "hospitable_task_assignment_statuses": diagnostics.get(
                 "task_assignment_statuses"
             ),
+            "hospitable_task_unknown_assignment_status_count": diagnostics.get(
+                "task_unknown_assignment_status_count"
+            ),
             "hospitable_matched_reservation_count": len(self._reservations_for_property()),
             "hospitable_unmatched_reservation_samples": [
                 _public_reservation_attrs(item)
@@ -291,7 +294,6 @@ def _is_task_assignment_alert(task: dict[str, Any]) -> bool:
     if assignment_status in {"accepted", "completed", "complete", "done"}:
         return False
     return assignment_status in {
-        "",
         "pending",
         "unaccepted",
         "not accepted",
