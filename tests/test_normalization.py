@@ -19,12 +19,12 @@ def _load_module(name: str, relative_path: str) -> ModuleType:
 
 
 api = _load_module(
-    "hospitable_integration_client",
-    "custom_components/hospitable_integration/api.py",
+    "hospitable_api_client",
+    "custom_components/hospitable_api/api.py",
 )
 normalization = _load_module(
     "hospitable_normalization",
-    "custom_components/hospitable_integration/normalization.py",
+    "custom_components/hospitable_api/normalization.py",
 )
 
 

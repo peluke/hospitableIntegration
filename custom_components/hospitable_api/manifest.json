@@ -1,5 +1,5 @@
 {
-  "domain": "hospitable_integration",
+  "domain": "hospitable_api",
   "name": "Hospitable Integration",
   "codeowners": ["@peluke"],
   "config_flow": true,
@@ -7,5 +7,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/peluke/hospitableIntegration/issues",
   "requirements": [],
-  "version": "0.4.1"
+  "version": "0.4.2"
 }

@@ -7,7 +7,7 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 ## File Locations
 
 - Source: `/Users/peluke/Documents/Hospitable HA Plugin`
-- Home Assistant integration: `/Users/peluke/Documents/Hospitable HA Plugin/custom_components/hospitable_integration`
+- Home Assistant integration: `/Users/peluke/Documents/Hospitable HA Plugin/custom_components/hospitable_api`
 - Obsidian documentation: `/Users/peluke/Documents/ObsidianSync/hospitable-ha-plugin`
 
 ## Setup
@@ -24,7 +24,7 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 
 ### Manual
 
-1. Copy `custom_components/hospitable_integration` into Home Assistant's `custom_components` folder.
+1. Copy `custom_components/hospitable_api` into Home Assistant's `custom_components` folder.
 2. Restart Home Assistant.
 3. Add the integration from **Settings -> Devices & services**.
 4. Enter a Hospitable Personal Access Token.
@@ -33,10 +33,10 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 ## HACS Readiness
 
 - Root `hacs.json` added.
-- Repository contains one integration under `custom_components/hospitable_integration`.
+- Repository contains one integration under `custom_components/hospitable_api`.
 - Manifest includes HACS-required metadata.
 - GitHub Actions validation is configured for `hacs/action@main` and `home-assistant/actions/hassfest@master`.
-- Local brand icon and logo assets are stored in `custom_components/hospitable_integration/brand`, with editable SVG source files in `assets`.
+- Local brand icon and logo assets are stored in `custom_components/hospitable_api/brand`, with editable SVG source files in `assets`.
 
 For default HACS repository inclusion later, the public GitHub repo will still need repository metadata, enabled issues, Home Assistant Brands submission, passing CI, and a GitHub release.
 
@@ -56,7 +56,7 @@ Each Hospitable property gets:
 
 ## Automation Service
 
-Service/action: `hospitable_integration.post_guest_message`
+Service/action: `hospitable_api.post_guest_message`
 
 Required data:
 
@@ -97,9 +97,10 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-06: Restored the stable Home Assistant domain and package path to `hospitable_api` so existing installs receive the checkout task sensors after upgrade.
 - 2026-08-06: Made task fetch failures non-fatal so checkout task sensors still load and expose task API errors in diagnostics.
 - 2026-08-06: Added checkout-day task fetches and per-property checkout task sensors for cleaning assignment coverage.
-- 2026-08-06: Renamed the Home Assistant domain to `hospitable_integration`, moved the integration package, moved the blueprint folder, and updated service/action examples.
+- 2026-08-06: Renamed the repository and user-facing integration name while keeping the stable Home Assistant domain `hospitable_api`.
 - 2026-08-06: Hardened API pagination, response normalization, service validation, first-arrival blueprint validation, sensor reservation indexing, config input cleanup, local tests, and reduced raw guest/API payload storage in coordinator state.
 - 2026-08-06: Added a first-arrival automation blueprint for keypad unlock alerts per property.
 - 2026-08-06: Moved README notes and troubleshooting content to GitHub Wiki pages and linked them from the README.
