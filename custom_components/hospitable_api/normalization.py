@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+MAX_RESPONSE_KEY_SAMPLE_SIZE = 30
+
 
 def dedupe_strings(values: Any) -> list[str]:
     """Strip, dedupe, and preserve order for string-like values."""
@@ -226,6 +228,15 @@ def normalize_task(item: dict[str, Any]) -> dict[str, Any]:
         "reservation_uuid": str(reservation_uuid) if reservation_uuid else None,
         "assignee_name": _guest_name(assignee),
         "assignee_uuid": _object_identifier(assignee),
+    }
+
+
+def response_key_sample(item: dict[str, Any]) -> dict[str, list[str]]:
+    """Return structural response keys without exposing response values."""
+    attrs = _attributes(item)
+    return {
+        "keys": sorted(str(key) for key in item)[:MAX_RESPONSE_KEY_SAMPLE_SIZE],
+        "attribute_keys": sorted(str(key) for key in attrs)[:MAX_RESPONSE_KEY_SAMPLE_SIZE],
     }
 
 

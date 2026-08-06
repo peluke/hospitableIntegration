@@ -226,6 +226,21 @@ def test_normalize_task_common_shape():
     assert normalized["assignee_name"] == "Charlotte"
 
 
+def test_response_key_sample_exposes_structure_only():
+    item = {
+        "id": "task-1",
+        "attributes": {
+            "private_note": "do not expose",
+            "status": "pending",
+        },
+    }
+
+    assert normalization.response_key_sample(item) == {
+        "keys": ["attributes", "id"],
+        "attribute_keys": ["private_note", "status"],
+    }
+
+
 def test_checkout_tasks_by_property_matches_checkout_dates():
     properties = [{"uuid": "property-1", "aliases": ["property-1", "12345"]}]
     reservations = [

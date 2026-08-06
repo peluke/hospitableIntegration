@@ -239,6 +239,18 @@ class HospitableGuestSensor(
             "hospitable_task_unknown_assignment_status_count": diagnostics.get(
                 "task_unknown_assignment_status_count"
             ),
+            "hospitable_task_detail_fetch_attempt_count": diagnostics.get(
+                "task_detail_fetch_attempt_count"
+            ),
+            "hospitable_task_detail_fetch_success_count": diagnostics.get(
+                "task_detail_fetch_success_count"
+            ),
+            "hospitable_task_detail_error_samples": diagnostics.get(
+                "task_detail_error_samples"
+            ),
+            "hospitable_task_detail_key_samples": diagnostics.get(
+                "task_detail_key_samples"
+            ),
             "hospitable_matched_reservation_count": len(self._reservations_for_property()),
             "hospitable_unmatched_reservation_samples": [
                 _public_reservation_attrs(item)
@@ -274,6 +286,8 @@ def _public_task_attrs(task: dict[str, Any]) -> dict[str, Any]:
         "reservation_uuid": task.get("reservation_uuid"),
         "assignee_name": task.get("assignee_name"),
         "assignee_uuid": task.get("assignee_uuid"),
+        "detail_fetched": task.get("detail_fetched"),
+        "detail_error": task.get("detail_error"),
     }
 
 

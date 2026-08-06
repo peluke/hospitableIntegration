@@ -29,6 +29,7 @@ from .normalization import (
     normalize_reservation,
     normalize_task,
     reservations_by_property,
+    response_key_sample,
     synthetic_properties_for_missing_ids,
 )
 
@@ -115,6 +116,7 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise UpdateFailed(str(err)) from err
 
         task_error: str | None = None
+        task_detail_diagnostics = _empty_task_detail_diagnostics()
         try:
             tasks = await self.api.async_get_tasks(
                 start_date=today.isoformat(),
@@ -122,10 +124,12 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 property_uuids=property_uuids,
             )
             normalized_tasks = [normalize_task(item) for item in tasks]
-            normalized_tasks = await self._async_enrich_checkout_tasks(
-                normalized_properties,
-                normalized_reservations,
-                normalized_tasks,
+            normalized_tasks, task_detail_diagnostics = (
+                await self._async_enrich_checkout_tasks(
+                    normalized_properties,
+                    normalized_reservations,
+                    normalized_tasks,
+                )
             )
         except HospitableApiError as err:
             task_error = str(err)
@@ -151,6 +155,7 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 property_uuids,
                 configured_property_uuids,
                 task_error,
+                task_detail_diagnostics,
             ),
         }
 
@@ -159,8 +164,9 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         properties: list[dict[str, Any]],
         reservations: list[dict[str, Any]],
         tasks: list[dict[str, Any]],
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         """Fetch details for checkout-date tasks only."""
+        diagnostics = _empty_task_detail_diagnostics()
         checkout_tasks = checkout_tasks_by_property(properties, reservations, tasks)
         checkout_task_uuids = {
             task["uuid"]
@@ -169,21 +175,28 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if task.get("uuid")
         }
         if not checkout_task_uuids:
-            return tasks
+            return tasks, diagnostics
 
-        detail_by_uuid: dict[str, dict[str, Any] | None] = {}
+        detail_by_uuid: dict[str, dict[str, Any]] = {}
         for task in tasks:
             task_uuid = task.get("uuid")
             if not task_uuid or task_uuid not in checkout_task_uuids:
                 continue
             if len(detail_by_uuid) >= MAX_TASK_DETAIL_FETCHES:
+                detail_by_uuid[str(task_uuid)] = {
+                    "detail_fetched": False,
+                    "detail_error": "Task detail fetch limit reached.",
+                }
                 break
-            detail_by_uuid[str(task_uuid)] = await _async_task_detail(self.api, task)
+            diagnostics["attempt_count"] += 1
+            detail_by_uuid[str(task_uuid)] = await _async_task_detail(
+                self.api, task, diagnostics
+            )
 
         return [
             _merge_task_detail(task, detail_by_uuid.get(str(task.get("uuid"))))
             for task in tasks
-        ]
+        ], diagnostics
 
 
 def _parse_property_uuids(raw_value: str) -> list[str]:
@@ -197,6 +210,7 @@ def _diagnostics(
     queried_property_uuids: list[str],
     configured_property_ids: list[str],
     task_error: str | None,
+    task_detail_diagnostics: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "property_count": len(properties),
@@ -237,21 +251,43 @@ def _diagnostics(
         "task_unknown_assignment_status_count": sum(
             1 for item in tasks if not item.get("assignment_status")
         ),
+        "task_detail_fetch_attempt_count": task_detail_diagnostics["attempt_count"],
+        "task_detail_fetch_success_count": task_detail_diagnostics["success_count"],
+        "task_detail_error_samples": task_detail_diagnostics["error_samples"],
+        "task_detail_key_samples": task_detail_diagnostics["key_samples"],
     }
 
 
 async def _async_task_detail(
     api: HospitableApiClient,
     task: dict[str, Any],
-) -> dict[str, Any] | None:
+    diagnostics: dict[str, Any],
+) -> dict[str, Any]:
     task_uuid = task.get("uuid")
     if not task_uuid:
-        return None
+        return {"detail_fetched": False, "detail_error": "Task UUID is missing."}
     try:
-        return normalize_task(await api.async_get_task(str(task_uuid)))
+        raw_detail = await api.async_get_task(str(task_uuid))
     except HospitableApiError as err:
+        error = str(err)
         _LOGGER.debug("Failed to fetch Hospitable task detail for %s: %s", task_uuid, err)
-        return None
+        _append_limited(
+            diagnostics["error_samples"],
+            {"task_uuid": str(task_uuid), "error": error[:300]},
+        )
+        return {"detail_fetched": False, "detail_error": error[:300]}
+
+    diagnostics["success_count"] += 1
+    key_sample = response_key_sample(raw_detail)
+    _append_limited(
+        diagnostics["key_samples"],
+        {"task_uuid": str(task_uuid), **key_sample},
+    )
+    return {
+        **normalize_task(raw_detail),
+        "detail_fetched": True,
+        "detail_error": None,
+    }
 
 
 def _merge_task_detail(
@@ -265,3 +301,17 @@ def _merge_task_detail(
         if value not in (None, ""):
             merged[key] = value
     return merged
+
+
+def _empty_task_detail_diagnostics() -> dict[str, Any]:
+    return {
+        "attempt_count": 0,
+        "success_count": 0,
+        "error_samples": [],
+        "key_samples": [],
+    }
+
+
+def _append_limited(items: list[dict[str, Any]], item: dict[str, Any]) -> None:
+    if len(items) < 3:
+        items.append(item)

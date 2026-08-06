@@ -30,18 +30,6 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 4. Enter a Hospitable Personal Access Token.
 5. Optionally limit polling to specific comma-separated property UUIDs.
 
-## HACS Readiness
-
-- Root `hacs.json` added.
-- Repository contains one integration under `custom_components/hospitable_api`.
-- Manifest includes HACS-required metadata.
-- GitHub Actions validation is configured for `hacs/action@main` and `home-assistant/actions/hassfest@master`.
-- Local brand icon and logo assets are stored in `custom_components/hospitable_api/brand`, with editable SVG source files in `assets`.
-
-For default HACS repository inclusion later, the public GitHub repo will still need repository metadata, enabled issues, Home Assistant Brands submission, passing CI, and a GitHub release.
-
-The repository validation workflow ignores HACS `brands` and `topics` checks for custom-HACS use because those depend on GitHub settings and the external `home-assistant/brands` repository, not files in this project. The repository license is MIT.
-
 ## Entities
 
 Each Hospitable property gets:
@@ -51,6 +39,7 @@ Each Hospitable property gets:
 - `Upcoming Guests`: count of upcoming reservations, with reservation list in attributes.
 - `Checkout Tasks`: count of tasks that land on known checkout dates.
 - `Checkout Task Alert`: `on` when a checkout-day task is pending, unaccepted, declined, or rejected.
+- Task diagnostic attributes: detail fetch attempts, successes, errors, and sampled response keys for troubleshooting Hospitable task status fields.
 - Current reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
 - Next reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
 
@@ -97,6 +86,7 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-06: Added task-detail diagnostics for checkout tasks so missing Hospitable task status fields can be debugged without exposing raw task payloads.
 - 2026-08-06: Added checkout-task detail enrichment and stopped treating unknown task assignment status as an alert.
 - 2026-08-06: Removed unsupported task list includes from the Hospitable task query.
 - 2026-08-06: Restored the stable Home Assistant domain and package path to `hospitable_api` so existing installs receive the checkout task sensors after upgrade.

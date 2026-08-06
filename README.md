@@ -12,6 +12,7 @@ Custom Home Assistant integration for Hospitable Public API v2.
 - Personal Access Token setup through the Home Assistant UI.
 - Paginated reservation/property fetches with normalized common Hospitable response shapes.
 - Checkout-day task sensors for cleaning assignment coverage.
+- Task-detail diagnostics for troubleshooting Hospitable task status fields.
 
 ## Installation
 
@@ -40,27 +41,16 @@ The user-facing name is Hospitable Integration. The Home Assistant domain
 remains `hospitable_api` so existing config entries and automations continue to
 load after upgrade.
 
-## HACS Readiness
-
-This repository is structured for HACS as a custom integration repository:
-
-- `hacs.json` is present at the repository root.
-- The integration lives under `custom_components/hospitable_api`.
-- `manifest.json` includes the HACS-required `domain`, `documentation`, `issue_tracker`, `codeowners`, `name`, and `version` keys.
-- GitHub Actions are included for HACS validation and Hassfest validation.
-- Local brand assets are included under `custom_components/hospitable_api/brand`.
-
-The public GitHub repository, GitHub Issues, repository topics, MIT license, and
-release are in place. The repository installs as a custom HACS integration.
-External `home-assistant/brands` submission is optional and only needed for HACS
-default repository inclusion.
-
 ## Example Automation
 
 Checkout task assignment alerts are exposed per property with the `Checkout
 Task Alert` sensor. The sensor turns `on` when a checkout-day task is pending,
 unaccepted, declined, or rejected. Tasks with unknown assignment status are
 listed in attributes but do not trigger the alert.
+
+Task diagnostics expose detail fetch counts, detail fetch errors, and sampled
+response keys so field-shape issues can be debugged without publishing raw task
+payloads.
 
 If the Hospitable task endpoint is unavailable for the token, the task sensors
 still load as `0`/`off` and expose the API error in the
