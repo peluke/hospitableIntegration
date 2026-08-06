@@ -1,4 +1,4 @@
-# Hospitable API for Home Assistant
+# Hospitable Integration for Home Assistant
 
 Custom Home Assistant integration for Hospitable Public API v2.
 
@@ -19,10 +19,10 @@ Custom Home Assistant integration for Hospitable Public API v2.
 1. In HACS, open **Custom repositories**.
 2. Add this repository URL.
 3. Select **Integration** as the category.
-4. Install **Hospitable API**.
+4. Install **Hospitable Integration**.
 5. Restart Home Assistant.
 6. Go to **Settings -> Devices & services -> Add integration**.
-7. Search for **Hospitable API**.
+7. Search for **Hospitable Integration**.
 8. Enter a Hospitable Personal Access Token.
 
 ### Manual Installation
@@ -30,7 +30,7 @@ Custom Home Assistant integration for Hospitable Public API v2.
 1. Copy `custom_components/hospitable_api` into your Home Assistant `custom_components` directory.
 2. Restart Home Assistant.
 3. Go to **Settings -> Devices & services -> Add integration**.
-4. Search for **Hospitable API**.
+4. Search for **Hospitable Integration**.
 5. Enter a Hospitable Personal Access Token.
 
 ## HACS Readiness
