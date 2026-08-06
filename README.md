@@ -78,34 +78,7 @@ actions:
       message: "Your custom message"
 ```
 
-## Notes
+## Documentation
 
-- Store Hospitable tokens only through the Home Assistant config flow.
-- The integration polls every 15 minutes.
-- Hospitable reservation lookups require property UUIDs. If you leave the property field blank, the integration uses the UUIDs returned by the `/properties` endpoint.
-- Guest lists are exposed as sensor attributes because Home Assistant sensor states must be scalar values.
-- Version `0.1.6` adds separate current and next reservation detail sensors so automations can use scalar entity states instead of parsing attributes.
-
-## Troubleshooting
-
-### Setup succeeds but no entities appear
-
-Version `0.1.1` could create zero sensors when the configured property ID did not exactly match the primary ID returned by `/properties`, even though reservation requests succeeded. Upgrade to `0.1.2` or later. The integration now keeps all known property aliases and creates placeholder property devices for configured IDs when `/properties` does not return a matching record.
-
-### Entities appear but guest data is empty
-
-Upgrade to `0.1.5` or later. The integration now resolves configured property aliases back to Hospitable property UUIDs before querying reservations, parses Hospitable's `check_in`, `check_out`, `guests`, `properties`, and `reservation_status` response fields, and exposes diagnostic attributes on every sensor.
-
-Check these attributes on any Hospitable sensor:
-
-- `hospitable_reservation_count`
-- `hospitable_matched_reservation_count`
-- `hospitable_queried_property_uuids`
-- `hospitable_reservation_property_ids`
-- `hospitable_reservation_date_samples`
-
-### Failed setup, will retry: 400 Bad Request
-
-Version `0.1.0` sent reservation property filters as a comma-separated `properties` query parameter. Hospitable expects repeated `properties[]` query parameters. Upgrade to `0.1.1` or later, restart Home Assistant, and reload the integration.
-
-If the error persists, confirm that the optional property field contains Hospitable property UUIDs, not numeric property IDs or listing IDs.
+- [Notes](https://github.com/peluke/hospitableHA/wiki/Notes)
+- [Troubleshooting](https://github.com/peluke/hospitableHA/wiki/Troubleshooting)
