@@ -1,0 +1,77 @@
+# Hospitable HA Plugin
+
+## Purpose
+
+Home Assistant custom integration for Hospitable Public API v2. It exposes current and upcoming guest reservation data as sensors and provides a service/action that automations can use to send guest messages.
+
+## File Locations
+
+- Source: `/Users/peluke/Documents/Hospitable HA Plugin`
+- Home Assistant integration: `/Users/peluke/Documents/Hospitable HA Plugin/custom_components/hospitable_api`
+- Obsidian documentation: `/Users/peluke/Documents/ObsidianSync/hospitable-ha-plugin`
+
+## Setup
+
+### HACS Custom Repository
+
+1. In HACS, open **Custom repositories**.
+2. Add the GitHub repository URL.
+3. Select **Integration** as the category.
+4. Install **Hospitable API**.
+5. Restart Home Assistant.
+6. Add the integration from **Settings -> Devices & services**.
+7. Enter a Hospitable Personal Access Token.
+
+### Manual
+
+1. Copy `custom_components/hospitable_api` into Home Assistant's `custom_components` folder.
+2. Restart Home Assistant.
+3. Add the integration from **Settings -> Devices & services**.
+4. Enter a Hospitable Personal Access Token.
+5. Optionally limit polling to specific comma-separated property UUIDs.
+
+## HACS Readiness
+
+- Root `hacs.json` added.
+- Repository contains one integration under `custom_components/hospitable_api`.
+- Manifest includes HACS-required metadata.
+- GitHub Actions validation is configured for `hacs/action@main` and `home-assistant/actions/hassfest@master`.
+
+For default HACS repository inclusion later, the public GitHub repo will still need repository metadata, enabled issues, Home Assistant Brands submission, passing CI, and a GitHub release.
+
+## Entities
+
+Each Hospitable property gets:
+
+- `Current Guest`: current in-house guest, with reservation details in attributes.
+- `Next Guest`: next arrival, with reservation details in attributes.
+- `Upcoming Guests`: count of upcoming reservations, with reservation list in attributes.
+
+## Automation Service
+
+Service/action: `hospitable_api.post_guest_message`
+
+Required data:
+
+- `message`
+
+Use either:
+
+- `reservation_uuid`
+- `entity_id` for a Hospitable current or next guest sensor with a `reservation_uuid` attribute
+
+## Security Notes
+
+- Do not store Hospitable tokens in source files, YAML examples, or Obsidian notes.
+- Use placeholders in examples.
+- Home Assistant stores the token in the config entry created by the UI flow.
+
+## Known Issues
+
+- Hospitable API field shapes can vary by booking platform and included relationships; the integration normalizes common variants.
+- The message endpoint is implemented as `POST /v2/reservations/{reservation_uuid}/messages` based on current public API references. Confirm against live Hospitable docs if posting fails.
+
+## Change Log
+
+- 2026-08-06: Added HACS metadata, HACS install docs, and GitHub Actions validation workflow.
+- 2026-08-06: Initial custom integration scaffold with guest sensors and guest-message service.

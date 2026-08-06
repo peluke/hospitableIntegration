@@ -1,0 +1,26 @@
+post_guest_message:
+  name: Post guest message
+  description: Post a message to a Hospitable guest conversation for a reservation.
+  fields:
+    entity_id:
+      name: Guest sensor
+      description: Current or next guest sensor containing a reservation_uuid attribute.
+      required: false
+      selector:
+        entity:
+          integration: hospitable_api
+          domain: sensor
+    reservation_uuid:
+      name: Reservation UUID
+      description: Hospitable reservation UUID. Required when no guest sensor is supplied.
+      required: false
+      selector:
+        text:
+    message:
+      name: Message
+      description: Message text to send to the guest.
+      required: true
+      selector:
+        text:
+          multiline: true
+

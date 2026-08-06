@@ -1,0 +1,22 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hospitable API",
+        "description": "Enter a Hospitable Personal Access Token. The token is stored in Home Assistant's config entry storage.",
+        "data": {
+          "api_token": "Personal Access Token",
+          "property_uuids": "Property UUIDs, comma-separated",
+          "lookahead_days": "Upcoming reservation lookahead days"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to connect to Hospitable with this token."
+    },
+    "abort": {
+      "already_configured": "Hospitable API is already configured."
+    }
+  }
+}
+
