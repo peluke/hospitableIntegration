@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Hospitable API Home Assistant icon</title>
+  <desc id="desc">Original icon combining a smart-home outline, guest message bubble, and automation nodes.</desc>
+  <defs>
+    <linearGradient id="background" x1="68" y1="55" x2="444" y2="462" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00A6D6"/>
+      <stop offset="0.55" stop-color="#006F9F"/>
+      <stop offset="1" stop-color="#255C4F"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="168" y1="151" x2="352" y2="371" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE3A3"/>
+      <stop offset="1" stop-color="#F5A623"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#002C3D" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#background)"/>
+
+  <g filter="url(#shadow)">
+    <path
+      d="M113 243.5 256 126l143 117.5v143.2c0 18.4-14.9 33.3-33.3 33.3H146.3c-18.4 0-33.3-14.9-33.3-33.3V243.5Z"
+      fill="#FFFFFF"
+      opacity="0.96"/>
+    <path
+      d="M89 251 256 113l167 138"
+      fill="none"
+      stroke="#EAFBFF"
+      stroke-width="35"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+    <path
+      d="M89 251 256 113l167 138"
+      fill="none"
+      stroke="#FFFFFF"
+      stroke-width="22"
+      stroke-linecap="round"
+      stroke-linejoin="round"/>
+  </g>
+
+  <g>
+    <path
+      d="M164 237c0-22.1 17.9-40 40-40h104c22.1 0 40 17.9 40 40v55c0 22.1-17.9 40-40 40h-40l-52 45v-45h-12c-22.1 0-40-17.9-40-40v-55Z"
+      fill="url(#accent)"/>
+    <circle cx="226" cy="264" r="13" fill="#123D4B"/>
+    <circle cx="286" cy="264" r="13" fill="#123D4B"/>
+    <path
+      d="M226 300c15 12 45 12 60 0"
+      fill="none"
+      stroke="#123D4B"
+      stroke-width="14"
+      stroke-linecap="round"/>
+  </g>
+
+  <g fill="none" stroke="#B7F3FF" stroke-width="16" stroke-linecap="round">
+    <path d="M141 336h-24c-17.7 0-32-14.3-32-32v-13"/>
+    <path d="M371 336h24c17.7 0 32-14.3 32-32v-13"/>
+    <path d="M256 126V83"/>
+  </g>
+
+  <g>
+    <circle cx="85" cy="278" r="22" fill="#B7F3FF"/>
+    <circle cx="256" cy="71" r="22" fill="#B7F3FF"/>
+    <circle cx="427" cy="278" r="22" fill="#B7F3FF"/>
+    <circle cx="85" cy="278" r="9" fill="#006F9F"/>
+    <circle cx="256" cy="71" r="9" fill="#006F9F"/>
+    <circle cx="427" cy="278" r="9" fill="#006F9F"/>
+  </g>
+</svg>
+

@@ -39,6 +39,11 @@ This repository is structured for HACS as a custom integration repository:
 - The integration lives under `custom_components/hospitable_api`.
 - `manifest.json` includes the HACS-required `domain`, `documentation`, `issue_tracker`, `codeowners`, `name`, and `version` keys.
 - GitHub Actions are included for HACS validation and Hassfest validation.
+- Local brand assets are included under `custom_components/hospitable_api/brand`.
+
+## Icon
+
+The integration icon is an original mark inspired by the project context: a smart-home outline, a guest message bubble, and automation nodes. SVG source files live in `assets/`, with Home Assistant-ready PNG assets in `custom_components/hospitable_api/brand/`.
 
 Before publishing broadly:
 

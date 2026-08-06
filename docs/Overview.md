@@ -36,6 +36,7 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 - Repository contains one integration under `custom_components/hospitable_api`.
 - Manifest includes HACS-required metadata.
 - GitHub Actions validation is configured for `hacs/action@main` and `home-assistant/actions/hassfest@master`.
+- Local brand icon and logo assets are stored in `custom_components/hospitable_api/brand`, with editable SVG source files in `assets`.
 
 For default HACS repository inclusion later, the public GitHub repo will still need repository metadata, enabled issues, Home Assistant Brands submission, passing CI, and a GitHub release.
 
@@ -75,6 +76,7 @@ Use either:
 
 ## Change Log
 
+- 2026-08-06: Added original icon/logo brand assets inspired by the Hospitable and Home Assistant project contexts.
 - 2026-08-06: Fixed zero-entity setup by preserving property aliases and creating placeholder properties for configured IDs without matching `/properties` records.
 - 2026-08-06: Fixed reservation query parameters to use `properties[]`, added check-in/check-out reservation lookups, improved API error messages, and changed outbound guest message payload to `body`.
 - 2026-08-06: Added HACS metadata, HACS install docs, and GitHub Actions validation workflow.
