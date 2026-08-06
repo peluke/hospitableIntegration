@@ -77,4 +77,13 @@ actions:
 
 - Store Hospitable tokens only through the Home Assistant config flow.
 - The integration polls every 15 minutes.
+- Hospitable reservation lookups require property UUIDs. If you leave the property field blank, the integration uses the UUIDs returned by the `/properties` endpoint.
 - Guest lists are exposed as sensor attributes because Home Assistant sensor states must be scalar values.
+
+## Troubleshooting
+
+### Failed setup, will retry: 400 Bad Request
+
+Version `0.1.0` sent reservation property filters as a comma-separated `properties` query parameter. Hospitable expects repeated `properties[]` query parameters. Upgrade to `0.1.1` or later, restart Home Assistant, and reload the integration.
+
+If the error persists, confirm that the optional property field contains Hospitable property UUIDs, not numeric property IDs or listing IDs.

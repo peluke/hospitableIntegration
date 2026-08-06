@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Any
 
 from aiohttp import ClientError, ClientResponseError, ClientSession
@@ -31,17 +30,16 @@ class HospitableApiClient:
         *,
         start_date: str,
         end_date: str,
+        date_query: str,
         property_uuids: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         """Return reservations for a date range."""
-        params: dict[str, Any] = {
-            "start_date": start_date,
-            "end_date": end_date,
-            "include": "guest,properties,listings",
-        }
-        if property_uuids:
-            params["properties"] = ",".join(property_uuids)
-
+        params = _reservation_query_params(
+            start_date=start_date,
+            end_date=end_date,
+            date_query=date_query,
+            property_uuids=property_uuids or [],
+        )
         payload = await self._request("GET", "/reservations", params=params)
         return _extract_collection(payload)
 
@@ -50,7 +48,7 @@ class HospitableApiClient:
         await self._request(
             "POST",
             f"/reservations/{reservation_uuid}/messages",
-            json={"message": message},
+            json={"body": message},
         )
 
     async def async_validate_token(self) -> None:
@@ -62,8 +60,8 @@ class HospitableApiClient:
         method: str,
         path: str,
         *,
-        params: Mapping[str, Any] | None = None,
-        json: Mapping[str, Any] | None = None,
+        params: list[tuple[str, str]] | None = None,
+        json: dict[str, Any] | None = None,
     ) -> Any:
         headers = {
             "Accept": "application/json",
@@ -81,7 +79,9 @@ class HospitableApiClient:
                 json=json,
                 timeout=30,
             ) as response:
-                response.raise_for_status()
+                if response.status >= 400:
+                    message = await _response_error_message(response)
+                    raise HospitableApiError(f"{response.status} {message}")
                 if response.status == 204:
                     return {}
                 return await response.json()
@@ -111,3 +111,40 @@ def _extract_collection(payload: Any) -> list[dict[str, Any]]:
 
     return []
 
+
+def _reservation_query_params(
+    *,
+    start_date: str,
+    end_date: str,
+    date_query: str,
+    property_uuids: list[str],
+) -> list[tuple[str, str]]:
+    params = [
+        ("date_query", date_query),
+        ("start_date", start_date),
+        ("end_date", end_date),
+        ("include", "guest,properties,listings"),
+    ]
+    params.extend(("properties[]", uuid) for uuid in property_uuids)
+    return params
+
+
+async def _response_error_message(response: Any) -> str:
+    """Return the most useful API error message available."""
+    try:
+        payload = await response.json()
+    except (ClientError, ValueError):
+        payload = None
+
+    if isinstance(payload, dict):
+        for key in ("message", "error", "detail", "title"):
+            value = payload.get(key)
+            if value:
+                return str(value)
+        errors = payload.get("errors")
+        if isinstance(errors, list) and errors:
+            return str(errors[0])
+        return str(payload)
+
+    text = await response.text()
+    return text or response.reason

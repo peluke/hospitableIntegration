@@ -3,9 +3,9 @@
   "name": "Hospitable API",
   "codeowners": ["@peluke"],
   "config_flow": true,
-  "documentation": "https://github.com/peluke/hospitable-ha-plugin",
+  "documentation": "https://github.com/peluke/hospitableHA",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/peluke/hospitable-ha-plugin/issues",
+  "issue_tracker": "https://github.com/peluke/hospitableHA/issues",
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

@@ -51,28 +51,47 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         try:
             properties = await self.api.async_get_properties()
+            normalized_properties = [_normalize_property(item) for item in properties]
+            if configured_property_uuids:
+                property_uuids = configured_property_uuids
+                normalized_properties = [
+                    item
+                    for item in normalized_properties
+                    if item["uuid"] in configured_property_uuids
+                ]
+            else:
+                property_uuids = [
+                    item["uuid"] for item in normalized_properties if item.get("uuid")
+                ]
+            if not property_uuids:
+                raise UpdateFailed(
+                    "No Hospitable property UUIDs found. Enter at least one property UUID in the integration options."
+                )
             reservations = await self.api.async_get_reservations(
                 start_date=today.isoformat(),
                 end_date=end_date.isoformat(),
-                property_uuids=configured_property_uuids or None,
+                date_query="checkin",
+                property_uuids=property_uuids,
             )
+            reservations.extend(
+                await self.api.async_get_reservations(
+                    start_date=today.isoformat(),
+                    end_date=end_date.isoformat(),
+                    date_query="checkout",
+                    property_uuids=property_uuids,
+                )
+            )
+            normalized_reservations = _dedupe_reservations(
+                [_normalize_reservation(item) for item in reservations]
+            )
+            if configured_property_uuids:
+                normalized_reservations = [
+                    item
+                    for item in normalized_reservations
+                    if item.get("property_uuid") in configured_property_uuids
+                ]
         except HospitableApiError as err:
             raise UpdateFailed(str(err)) from err
-
-        normalized_properties = [_normalize_property(item) for item in properties]
-        normalized_reservations = [_normalize_reservation(item) for item in reservations]
-
-        if configured_property_uuids:
-            normalized_properties = [
-                item
-                for item in normalized_properties
-                if item["uuid"] in configured_property_uuids
-            ]
-            normalized_reservations = [
-                item
-                for item in normalized_reservations
-                if item.get("property_uuid") in configured_property_uuids
-            ]
 
         return {
             "properties": normalized_properties,
@@ -82,6 +101,19 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
 def _parse_property_uuids(raw_value: str) -> list[str]:
     return [item.strip() for item in raw_value.split(",") if item.strip()]
+
+
+def _dedupe_reservations(reservations: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    deduped: list[dict[str, Any]] = []
+    for reservation in reservations:
+        uuid = reservation.get("uuid")
+        if uuid and uuid in seen:
+            continue
+        if uuid:
+            seen.add(uuid)
+        deduped.append(reservation)
+    return deduped
 
 
 def _normalize_property(item: dict[str, Any]) -> dict[str, Any]:

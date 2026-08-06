@@ -69,9 +69,11 @@ Use either:
 ## Known Issues
 
 - Hospitable API field shapes can vary by booking platform and included relationships; the integration normalizes common variants.
-- The message endpoint is implemented as `POST /v2/reservations/{reservation_uuid}/messages` based on current public API references. Confirm against live Hospitable docs if posting fails.
+- Hospitable reservation queries require property UUIDs. Version `0.1.1` sends these as repeated `properties[]` query parameters.
+- The message endpoint is implemented as `POST /v2/reservations/{reservation_uuid}/messages` with a JSON `body` field based on current public API references. Confirm against live Hospitable docs if posting fails.
 
 ## Change Log
 
+- 2026-08-06: Fixed reservation query parameters to use `properties[]`, added check-in/check-out reservation lookups, improved API error messages, and changed outbound guest message payload to `body`.
 - 2026-08-06: Added HACS metadata, HACS install docs, and GitHub Actions validation workflow.
 - 2026-08-06: Initial custom integration scaffold with guest sensors and guest-message service.
