@@ -53,6 +53,9 @@ Before publishing broadly:
 - Enable GitHub Issues.
 - Add the integration to `home-assistant/brands` if you want it to meet HACS default repository inclusion requirements.
 - Create a GitHub release for each version you want HACS users to install explicitly.
+- The repository is MIT licensed.
+
+For custom HACS URL use, the validation workflow ignores the external `brands` and `topics` checks. The repository still installs as a custom integration. For HACS default repository inclusion, remove those ignores after adding GitHub topics and submitting brand assets to `home-assistant/brands`.
 
 ## Example Automation
 

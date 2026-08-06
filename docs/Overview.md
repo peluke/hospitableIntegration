@@ -40,6 +40,8 @@ Home Assistant custom integration for Hospitable Public API v2. It exposes curre
 
 For default HACS repository inclusion later, the public GitHub repo will still need repository metadata, enabled issues, Home Assistant Brands submission, passing CI, and a GitHub release.
 
+The repository validation workflow ignores HACS `brands` and `topics` checks for custom-HACS use because those depend on GitHub settings and the external `home-assistant/brands` repository, not files in this project. The repository license is MIT.
+
 ## Entities
 
 Each Hospitable property gets:
@@ -78,6 +80,8 @@ Use either:
 
 ## Change Log
 
+- 2026-08-06: Added MIT license and updated GitHub Actions checkout to Node 24-compatible v6.
+- 2026-08-06: Adjusted HACS validation workflow to ignore external `brands` and `topics` checks for custom repository use.
 - 2026-08-06: Reworked icon/logo into a reservation-card design using the same teal, cyan, white, and pink color scheme.
 - 2026-08-06: Added current and next reservation detail sensors for UUID, code, check-in, check-out, status, and platform.
 - 2026-08-06: Fixed empty guest sensors by querying reservations with resolved property UUIDs, parsing additional Hospitable reservation field shapes, requesting up to 100 reservations, and exposing diagnostic attributes.
