@@ -43,16 +43,10 @@ This repository is structured for HACS as a custom integration repository:
 - GitHub Actions are included for HACS validation and Hassfest validation.
 - Local brand assets are included under `custom_components/hospitable_api/brand`.
 
-Before publishing broadly:
-
-- Create a public GitHub repository.
-- Add repository topics such as `hacs`, `home-assistant`, `homeassistant`, and `custom-integration`.
-- Enable GitHub Issues.
-- Add the integration to `home-assistant/brands` if you want it to meet HACS default repository inclusion requirements.
-- Create a GitHub release for each version you want HACS users to install explicitly.
-- The repository is MIT licensed.
-
-For custom HACS URL use, the validation workflow ignores the external `brands` and `topics` checks. The repository still installs as a custom integration. For HACS default repository inclusion, remove those ignores after adding GitHub topics and submitting brand assets to `home-assistant/brands`.
+The public GitHub repository, GitHub Issues, repository topics, MIT license, and
+release are in place. The repository installs as a custom HACS integration.
+External `home-assistant/brands` submission is optional and only needed for HACS
+default repository inclusion.
 
 ## Example Automation
 
