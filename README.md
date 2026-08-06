@@ -63,7 +63,8 @@ unaccepted, declined, or rejected.
 
 If the Hospitable task endpoint is unavailable for the token, the task sensors
 still load as `0`/`off` and expose the API error in the
-`hospitable_task_error` attribute.
+`hospitable_task_error` attribute. Task list requests intentionally avoid
+unsupported per-task includes.
 
 ```yaml
 alias: Cleaning task needs attention

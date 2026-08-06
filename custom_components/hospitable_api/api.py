@@ -211,7 +211,6 @@ def _task_query_params(
         ("start_date", start_date),
         ("end_date", end_date),
         ("per_page", str(DEFAULT_PAGE_SIZE)),
-        ("include", "assignee,teammate,property,reservation"),
     ]
     params.extend(("properties[]", uuid) for uuid in property_uuids)
     return params

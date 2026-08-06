@@ -201,6 +201,7 @@ def test_task_query_uses_hospitable_property_array_params():
     assert ("properties[]", "property-1") in params
     assert ("properties[]", "property-2") in params
     assert ("per_page", "100") in params
+    assert not any(key == "include" for key, _value in params)
 
 
 def test_normalize_task_common_shape():

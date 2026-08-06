@@ -97,6 +97,7 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-06: Removed unsupported task list includes from the Hospitable task query.
 - 2026-08-06: Restored the stable Home Assistant domain and package path to `hospitable_api` so existing installs receive the checkout task sensors after upgrade.
 - 2026-08-06: Made task fetch failures non-fatal so checkout task sensors still load and expose task API errors in diagnostics.
 - 2026-08-06: Added checkout-day task fetches and per-property checkout task sensors for cleaning assignment coverage.
