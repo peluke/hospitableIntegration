@@ -1,12 +1,27 @@
 """Tests for Hospitable normalization helpers."""
 
-from custom_components.hospitable_api.api import _reservation_query_params
-from custom_components.hospitable_api.coordinator import (
-    _dedupe_reservations,
-    _has_matching_alias,
-    _normalize_property,
-    _normalize_reservation,
-    _synthetic_properties_for_missing_ids,
+from __future__ import annotations
+
+import importlib.util
+from pathlib import Path
+from types import ModuleType
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_module(name: str, relative_path: str) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(name, ROOT / relative_path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+api = _load_module("hospitable_api_client", "custom_components/hospitable_api/api.py")
+normalization = _load_module(
+    "hospitable_normalization",
+    "custom_components/hospitable_api/normalization.py",
 )
 
 
@@ -16,9 +31,12 @@ def test_normalize_property_json_api_shape():
         "attributes": {"uuid": "property-1", "name": "Cabin"},
     }
 
-    assert _normalize_property(item)["uuid"] == "property-1"
-    assert _normalize_property(item)["name"] == "Cabin"
-    assert _normalize_property(item)["aliases"] == ["property-1", "numeric-1"]
+    assert normalization.normalize_property(item)["uuid"] == "property-1"
+    assert normalization.normalize_property(item)["name"] == "Cabin"
+    assert normalization.normalize_property(item)["aliases"] == [
+        "property-1",
+        "numeric-1",
+    ]
 
 
 def test_normalize_reservation_json_api_shape():
@@ -33,7 +51,7 @@ def test_normalize_reservation_json_api_shape():
         "relationships": {"properties": {"data": {"id": "property-1"}}},
     }
 
-    normalized = _normalize_reservation(item)
+    normalized = normalization.normalize_reservation(item)
 
     assert normalized["uuid"] == "reservation-1"
     assert normalized["property_uuid"] == "property-1"
@@ -41,7 +59,7 @@ def test_normalize_reservation_json_api_shape():
 
 
 def test_reservation_query_uses_hospitable_property_array_params():
-    params = _reservation_query_params(
+    params = api._reservation_query_params(
         start_date="2026-08-06",
         end_date="2026-09-06",
         date_query="checkin",
@@ -61,7 +79,7 @@ def test_dedupe_reservations_by_uuid():
         {"uuid": "reservation-2", "date_query": "checkout"},
     ]
 
-    assert _dedupe_reservations(reservations) == [
+    assert normalization.dedupe_reservations(reservations) == [
         {"uuid": "reservation-1", "date_query": "checkin"},
         {"uuid": "reservation-2", "date_query": "checkout"},
     ]
@@ -70,14 +88,14 @@ def test_dedupe_reservations_by_uuid():
 def test_matching_property_aliases():
     property_data = {"uuid": "property-uuid", "aliases": ["property-uuid", "12345"]}
 
-    assert _has_matching_alias(property_data, ["12345"])
-    assert not _has_matching_alias(property_data, ["67890"])
+    assert normalization.has_matching_alias(property_data, ["12345"])
+    assert not normalization.has_matching_alias(property_data, ["67890"])
 
 
 def test_synthetic_properties_for_missing_configured_ids():
     properties = [{"uuid": "property-1", "aliases": ["property-1", "12345"]}]
 
-    assert _synthetic_properties_for_missing_ids(
+    assert normalization.synthetic_properties_for_missing_ids(
         ["12345", "property-2"], properties
     ) == [
         {
@@ -85,7 +103,6 @@ def test_synthetic_properties_for_missing_configured_ids():
             "name": "Hospitable property-2",
             "address": None,
             "aliases": ["property-2"],
-            "raw": {},
         }
     ]
 
@@ -101,10 +118,71 @@ def test_normalize_reservation_hospitable_public_api_shape():
         "properties": [{"id": "property-1", "name": "Cabin"}],
     }
 
-    normalized = _normalize_reservation(item)
+    normalized = normalization.normalize_reservation(item)
 
     assert normalized["arrival_date"] == "2026-08-06T16:00:00Z"
     assert normalized["departure_date"] == "2026-08-08T11:00:00Z"
     assert normalized["status"] == "accepted"
     assert normalized["guest_name"] == "Grace Hopper"
     assert normalized["property_uuid"] == "property-1"
+
+
+def test_normalize_reservation_uses_first_list_items():
+    item = {
+        "id": "reservation-1",
+        "guests": [{"first_name": "Grace", "last_name": "Hopper"}],
+        "properties": [{"id": "property-1", "name": "Cabin"}],
+    }
+
+    normalized = normalization.normalize_reservation(item)
+
+    assert normalized["guest_name"] == "Grace Hopper"
+    assert normalized["property_uuid"] == "property-1"
+    assert normalized["property_name"] == "Cabin"
+
+
+def test_normalize_reservation_ignores_malformed_list_items():
+    item = {
+        "id": "reservation-1",
+        "guests": ["unexpected"],
+        "properties": ["unexpected"],
+    }
+
+    normalized = normalization.normalize_reservation(item)
+
+    assert normalized["guest_name"] is None
+    assert normalized["property_uuid"] is None
+    assert normalized["property_name"] is None
+
+
+def test_dedupe_strings_strips_and_preserves_order():
+    assert normalization.dedupe_strings(
+        [" property-1 ", "property-2", "property-1", ""]
+    ) == ["property-1", "property-2"]
+
+
+def test_reservations_by_property_matches_aliases():
+    properties = [{"uuid": "property-1", "aliases": ["property-1", "12345"]}]
+    reservations = [
+        {"uuid": "reservation-1", "property_uuid": "12345"},
+        {"uuid": "reservation-2", "property_uuid": "other"},
+    ]
+
+    assert normalization.reservations_by_property(properties, reservations) == {
+        "property-1": [{"uuid": "reservation-1", "property_uuid": "12345"}]
+    }
+
+
+def test_has_next_page_uses_common_pagination_shapes():
+    assert api._has_next_page({"meta": {"last_page": 2}}, 1, 100)
+    assert api._has_next_page(
+        {"links": {"next": "https://example.test/next"}}, 1, 100
+    )
+    assert not api._has_next_page({"meta": {"last_page": 2}}, 2, 100)
+    assert not api._has_next_page({}, 1, 0)
+
+
+def test_extract_collection_ignores_non_dict_items():
+    payload = {"data": [{"id": "one"}, "unexpected", {"id": "two"}]}
+
+    assert api._extract_collection(payload) == [{"id": "one"}, {"id": "two"}]

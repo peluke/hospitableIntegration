@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_TOKEN, Platform
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -18,18 +16,19 @@ from .api import HospitableApiClient, HospitableApiError
 from .const import DOMAIN
 from .coordinator import HospitableDataUpdateCoordinator
 
-_LOGGER = logging.getLogger(__name__)
-
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 SERVICE_POST_GUEST_MESSAGE = "post_guest_message"
 
-SERVICE_POST_GUEST_MESSAGE_SCHEMA = vol.Schema(
-    {
-        vol.Optional("entity_id"): cv.entity_id,
-        vol.Optional("reservation_uuid"): cv.string,
-        vol.Required("message"): cv.string,
-    }
+SERVICE_POST_GUEST_MESSAGE_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            vol.Optional("entity_id"): cv.entity_id,
+            vol.Optional("reservation_uuid"): cv.string,
+            vol.Required("message"): cv.string,
+        }
+    ),
+    lambda value: _validate_post_guest_message_call(value),
 )
 
 
@@ -72,9 +71,8 @@ def _build_post_guest_message_handler(hass: HomeAssistant):
         reservation_uuid = call.data.get("reservation_uuid")
         entity_id = call.data.get("entity_id")
         message = call.data["message"].strip()
-
-        if not message:
-            raise HomeAssistantError("message must not be empty")
+        if reservation_uuid is not None:
+            reservation_uuid = reservation_uuid.strip()
 
         if entity_id and not reservation_uuid:
             state = hass.states.get(entity_id)
@@ -102,6 +100,17 @@ def _build_post_guest_message_handler(hass: HomeAssistant):
             ) from err
 
     return async_post_guest_message
+
+
+def _validate_post_guest_message_call(value: dict) -> dict:
+    """Validate that an automation message call targets one reservation source."""
+    has_entity_id = bool(value.get("entity_id"))
+    has_reservation_uuid = bool(str(value.get("reservation_uuid") or "").strip())
+    if has_entity_id == has_reservation_uuid:
+        raise vol.Invalid("Provide exactly one of entity_id or reservation_uuid")
+    if not str(value.get("message") or "").strip():
+        raise vol.Invalid("message must not be empty")
+    return value
 
 
 def _find_coordinator_for_reservation(

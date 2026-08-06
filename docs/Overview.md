@@ -95,6 +95,7 @@ https://raw.githubusercontent.com/peluke/hospitableHA/main/blueprints/automation
 
 ## Change Log
 
+- 2026-08-06: Hardened API pagination, response normalization, service validation, first-arrival blueprint validation, sensor reservation indexing, config input cleanup, local tests, and reduced raw guest/API payload storage in coordinator state.
 - 2026-08-06: Added a first-arrival automation blueprint for keypad unlock alerts per property.
 - 2026-08-06: Moved README notes and troubleshooting content to GitHub Wiki pages and linked them from the README.
 - 2026-08-06: Added MIT license and updated GitHub Actions checkout to Node 24-compatible v6.

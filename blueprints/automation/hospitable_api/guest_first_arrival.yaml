@@ -1,22 +1,27 @@
+---
 blueprint:
   name: Hospitable Guest First Arrival
   description: >
     Send a notification the first time the current Hospitable guest unlocks a
     property door. Use one automation instance per property/lock.
   domain: automation
-  source_url: https://github.com/peluke/hospitableHA/blob/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
+  source_url: >-
+    https://github.com/peluke/hospitableHA/blob/main/blueprints/automation/hospitable_api/guest_first_arrival.yaml
   homeassistant:
     min_version: 2024.10.0
   input:
     lock_entity:
       name: Door lock
-      description: Lock entity managed by SmartThings or another Home Assistant lock integration.
+      description: >
+        Lock entity managed by SmartThings or another Home Assistant lock
+        integration.
       selector:
         entity:
           domain: lock
     current_reservation_uuid_sensor:
       name: Current reservation UUID sensor
-      description: Hospitable current reservation UUID sensor for this property.
+      description: >
+        Hospitable current reservation UUID sensor for this property.
       selector:
         entity:
           domain: sensor
@@ -28,14 +33,16 @@ blueprint:
           domain: sensor
     last_arrived_reservation_uuid_helper:
       name: Last arrived reservation helper
-      description: Input text helper used to remember the reservation already announced for this property.
+      description: >
+        Input text helper used to remember the reservation already announced
+        for this property.
       selector:
         entity:
           domain: input_text
     arrival_actions:
       name: Arrival actions
-      description: Actions to run when the guest unlocks the door for the first time.
-      default: []
+      description: >
+        Actions to run when the guest unlocks the door for the first time.
       selector:
         action:
     require_keypad:
@@ -52,19 +59,34 @@ variables:
   lock_entity: !input lock_entity
   current_reservation_uuid_sensor: !input current_reservation_uuid_sensor
   current_guest_sensor: !input current_guest_sensor
-  last_arrived_reservation_uuid_helper: !input last_arrived_reservation_uuid_helper
+  last_arrived_helper: !input last_arrived_reservation_uuid_helper
   require_keypad: !input require_keypad
-  reservation_uuid: "{{ states(current_reservation_uuid_sensor) }}"
-  guest_name: "{{ states(current_guest_sensor) }}"
-  lock_name: "{{ state_attr(lock_entity, 'friendly_name') or lock_entity }}"
-  code_name: "{{ trigger.to_state.attributes.code_name | default('', true) }}"
-  code_id: "{{ trigger.to_state.attributes.code_id | default('', true) }}"
-  unlock_method: "{{ trigger.to_state.attributes.method | default('', true) }}"
-  arrival_name: "{{ code_name if code_name else guest_name }}"
+  reservation_uuid: >-
+    {{ states(current_reservation_uuid_sensor) | string | trim }}
+  last_arrived_reservation_uuid: >-
+    {{ states(last_arrived_helper) | string | trim }}
+  guest_name: "{{ states(current_guest_sensor) | string | trim }}"
+  lock_name: >-
+    {{ state_attr(lock_entity, 'friendly_name') | default(lock_entity, true) }}
+  code_name: >-
+    {{ trigger.to_state.attributes.get('code_name', '')
+       | default('', true) | string | trim }}
+  code_id: >-
+    {{ trigger.to_state.attributes.get('code_id', '')
+       | default('', true) | string | trim }}
+  unlock_method: >-
+    {{ trigger.to_state.attributes.get('method', '')
+       | default('', true) | string | lower | trim }}
+  arrival_name: >-
+    {% set candidate_name = code_name if code_name else guest_name %}
+    {{ 'Guest' if candidate_name | lower
+       in ['unknown', 'unavailable', 'none', 'null', '']
+       else candidate_name }}
   arrival_title: "Guest arrived"
   arrival_message: >-
     {{ arrival_name }} unlocked {{ lock_name }} for the first time.
-    Reservation: {{ reservation_uuid }}{% if code_id %}; lock code: {{ code_id }}{% endif %}.
+    Reservation: {{ reservation_uuid }}{% if code_id %}; lock code:
+    {{ code_id }}{% endif %}.
 
 triggers:
   - trigger: state
@@ -74,9 +96,10 @@ triggers:
 conditions:
   - condition: template
     value_template: >-
-      {{ reservation_uuid not in ['unknown', 'unavailable', 'none', 'None', ''] }}
+      {{ reservation_uuid | lower
+         not in ['unknown', 'unavailable', 'none', 'null', ''] }}
   - condition: template
-    value_template: "{{ states(last_arrived_reservation_uuid_helper) != reservation_uuid }}"
+    value_template: "{{ last_arrived_reservation_uuid != reservation_uuid }}"
   - condition: template
     value_template: "{{ not require_keypad or unlock_method == 'keypad' }}"
 

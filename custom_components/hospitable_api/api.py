@@ -7,6 +7,8 @@ from typing import Any
 from aiohttp import ClientError, ClientResponseError, ClientSession
 
 API_BASE_URL = "https://public.api.hospitable.com/v2"
+DEFAULT_PAGE_SIZE = 100
+MAX_PAGES = 20
 
 
 class HospitableApiError(Exception):
@@ -22,8 +24,7 @@ class HospitableApiClient:
 
     async def async_get_properties(self) -> list[dict[str, Any]]:
         """Return Hospitable properties."""
-        payload = await self._request("GET", "/properties")
-        return _extract_collection(payload)
+        return await self._request_collection("GET", "/properties")
 
     async def async_get_reservations(
         self,
@@ -40,8 +41,7 @@ class HospitableApiClient:
             date_query=date_query,
             property_uuids=property_uuids or [],
         )
-        payload = await self._request("GET", "/reservations", params=params)
-        return _extract_collection(payload)
+        return await self._request_collection("GET", "/reservations", params=params)
 
     async def async_post_guest_message(self, reservation_uuid: str, message: str) -> None:
         """Post a message to the guest conversation for a reservation."""
@@ -54,6 +54,26 @@ class HospitableApiClient:
     async def async_validate_token(self) -> None:
         """Validate API credentials using a lightweight endpoint."""
         await self._request("GET", "/properties")
+
+    async def _request_collection(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: list[tuple[str, str]] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Request a paginated API collection."""
+        collection: list[dict[str, Any]] = []
+        page = 1
+        while page <= MAX_PAGES:
+            page_params = [*(params or []), ("page", str(page))]
+            payload = await self._request(method, path, params=page_params)
+            items = _extract_collection(payload)
+            collection.extend(items)
+            if not _has_next_page(payload, page, len(items)):
+                break
+            page += 1
+        return collection
 
     async def _request(
         self,
@@ -84,7 +104,10 @@ class HospitableApiClient:
                     raise HospitableApiError(f"{response.status} {message}")
                 if response.status == 204:
                     return {}
-                return await response.json()
+                try:
+                    return await response.json()
+                except (ClientError, ValueError) as err:
+                    raise HospitableApiError("Invalid JSON response") from err
         except ClientResponseError as err:
             raise HospitableApiError(f"{err.status} {err.message}") from err
         except ClientError as err:
@@ -112,6 +135,39 @@ def _extract_collection(payload: Any) -> list[dict[str, Any]]:
     return []
 
 
+def _has_next_page(payload: Any, current_page: int, item_count: int) -> bool:
+    """Return whether a collection response indicates another page exists."""
+    if not isinstance(payload, dict) or item_count == 0:
+        return False
+
+    links = payload.get("links")
+    if isinstance(links, dict) and links.get("next"):
+        return True
+
+    meta = payload.get("meta")
+    if not isinstance(meta, dict):
+        return item_count >= DEFAULT_PAGE_SIZE
+
+    for key in ("last_page", "total_pages"):
+        value = _int_or_none(meta.get(key))
+        if value is not None:
+            return current_page < value
+
+    total = _int_or_none(meta.get("total"))
+    per_page = _int_or_none(meta.get("per_page")) or DEFAULT_PAGE_SIZE
+    if total is not None:
+        return current_page * per_page < total
+
+    return item_count >= per_page
+
+
+def _int_or_none(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _reservation_query_params(
     *,
     start_date: str,
@@ -123,7 +179,7 @@ def _reservation_query_params(
         ("date_query", date_query),
         ("start_date", start_date),
         ("end_date", end_date),
-        ("per_page", "100"),
+        ("per_page", str(DEFAULT_PAGE_SIZE)),
         ("include", "guest,properties,listings"),
     ]
     params.extend(("properties[]", uuid) for uuid in property_uuids)

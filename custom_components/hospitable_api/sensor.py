@@ -104,25 +104,29 @@ class HospitableGuestSensor(
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return reservation details as attributes."""
+        include_diagnostics = self._reservation_field is None
         if self._sensor_kind == "upcoming":
-            return {
+            attrs: dict[str, Any] = {
                 "property_uuid": self._property_uuid,
                 "property_name": self._property_name,
                 "property_aliases": self._property_aliases,
-                **self._diagnostic_attrs(),
                 "reservations": [
                     _public_reservation_attrs(item)
                     for item in self._upcoming_reservations()
                 ],
             }
+            if include_diagnostics:
+                attrs.update(self._diagnostic_attrs())
+            return attrs
 
         reservation = self._selected_reservation()
         attrs: dict[str, Any] = {
             "property_uuid": self._property_uuid,
             "property_name": self._property_name,
             "property_aliases": self._property_aliases,
-            **self._diagnostic_attrs(),
         }
+        if include_diagnostics:
+            attrs.update(self._diagnostic_attrs())
         if reservation:
             attrs.update(_public_reservation_attrs(reservation))
         return attrs
@@ -170,12 +174,13 @@ class HospitableGuestSensor(
         return sorted(upcoming, key=lambda item: item.get("arrival_date") or "")
 
     def _reservations_for_property(self) -> list[dict[str, Any]]:
-        reservations: list[dict[str, Any]] = self.coordinator.data.get("reservations", [])
+        reservations_by_property: dict[str, list[dict[str, Any]]] = (
+            self.coordinator.data.get("reservations_by_property", {})
+        )
         return [
             item
-            for item in reservations
-            if item.get("property_uuid") in self._property_aliases
-            and not _is_cancelled(item.get("status"))
+            for item in reservations_by_property.get(self._property_uuid, [])
+            if not _is_cancelled(item.get("status"))
         ]
 
     def _diagnostic_attrs(self) -> dict[str, Any]:

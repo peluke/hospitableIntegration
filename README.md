@@ -10,6 +10,7 @@ Custom Home Assistant integration for Hospitable Public API v2.
 - Current and next reservation detail sensors for UUID, code, check-in, check-out, status, and platform.
 - `hospitable_api.post_guest_message` service/action for automations.
 - Personal Access Token setup through the Home Assistant UI.
+- Paginated reservation/property fetches with normalized common Hospitable response shapes.
 
 ## Installation
 
@@ -68,7 +69,8 @@ actions:
       message: "The front door was unlocked. Let us know if you need anything."
 ```
 
-You can also pass `reservation_uuid` directly:
+You can also pass `reservation_uuid` directly. Provide either `entity_id` or
+`reservation_uuid`, not both:
 
 ```yaml
 actions:
