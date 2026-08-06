@@ -104,12 +104,14 @@ conditions:
     value_template: "{{ not require_keypad or unlock_method == 'keypad' }}"
 
 actions:
-  - action: input_text.set_value
+  - alias: Store reservation as announced
+    action: input_text.set_value
     target:
       entity_id: !input last_arrived_reservation_uuid_helper
     data:
       value: "{{ reservation_uuid }}"
-  - choose:
+  - alias: Run configured arrival actions
+    choose:
       - conditions:
           - condition: template
             value_template: "{{ true }}"
