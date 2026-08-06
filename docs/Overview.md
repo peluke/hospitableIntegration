@@ -97,6 +97,7 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-06: Made task fetch failures non-fatal so checkout task sensors still load and expose task API errors in diagnostics.
 - 2026-08-06: Added checkout-day task fetches and per-property checkout task sensors for cleaning assignment coverage.
 - 2026-08-06: Renamed the Home Assistant domain to `hospitable_integration`, moved the integration package, moved the blueprint folder, and updated service/action examples.
 - 2026-08-06: Hardened API pagination, response normalization, service validation, first-arrival blueprint validation, sensor reservation indexing, config input cleanup, local tests, and reduced raw guest/API payload storage in coordinator state.

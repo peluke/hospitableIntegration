@@ -228,6 +228,7 @@ class HospitableGuestSensor(
             "hospitable_property_count": diagnostics.get("property_count"),
             "hospitable_reservation_count": diagnostics.get("reservation_count"),
             "hospitable_task_count": diagnostics.get("task_count"),
+            "hospitable_task_error": diagnostics.get("task_error"),
             "hospitable_queried_property_uuids": diagnostics.get("queried_property_uuids"),
             "hospitable_reservation_property_ids": diagnostics.get("reservation_property_ids"),
             "hospitable_reservation_statuses": diagnostics.get("reservation_statuses"),

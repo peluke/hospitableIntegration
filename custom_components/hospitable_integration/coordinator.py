@@ -111,6 +111,11 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             normalized_reservations = dedupe_reservations(
                 [normalize_reservation(item) for item in reservations]
             )
+        except HospitableApiError as err:
+            raise UpdateFailed(str(err)) from err
+
+        task_error: str | None = None
+        try:
             tasks = await self.api.async_get_tasks(
                 start_date=today.isoformat(),
                 end_date=end_date.isoformat(),
@@ -118,7 +123,9 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
             normalized_tasks = [normalize_task(item) for item in tasks]
         except HospitableApiError as err:
-            raise UpdateFailed(str(err)) from err
+            task_error = str(err)
+            normalized_tasks = []
+            _LOGGER.warning("Failed to fetch Hospitable tasks: %s", err)
 
         return {
             "properties": normalized_properties,
@@ -138,6 +145,7 @@ class HospitableDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 normalized_tasks,
                 property_uuids,
                 configured_property_uuids,
+                task_error,
             ),
         }
 
@@ -152,11 +160,13 @@ def _diagnostics(
     tasks: list[dict[str, Any]],
     queried_property_uuids: list[str],
     configured_property_ids: list[str],
+    task_error: str | None,
 ) -> dict[str, Any]:
     return {
         "property_count": len(properties),
         "reservation_count": len(reservations),
         "task_count": len(tasks),
+        "task_error": task_error,
         "queried_property_uuids": queried_property_uuids,
         "configured_property_ids": configured_property_ids,
         "reservation_property_ids": sorted(

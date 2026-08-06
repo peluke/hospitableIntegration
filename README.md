@@ -61,6 +61,10 @@ Checkout task assignment alerts are exposed per property with the `Checkout
 Task Alert` sensor. The sensor turns `on` when a checkout-day task is pending,
 unaccepted, declined, or rejected.
 
+If the Hospitable task endpoint is unavailable for the token, the task sensors
+still load as `0`/`off` and expose the API error in the
+`hospitable_task_error` attribute.
+
 ```yaml
 alias: Cleaning task needs attention
 triggers:

@@ -252,3 +252,11 @@ def test_checkout_tasks_by_property_matches_checkout_dates():
         reservations,
         tasks,
     ) == {"property-1": [tasks[0]]}
+
+
+def test_checkout_tasks_by_property_returns_empty_list_without_matches():
+    properties = [{"uuid": "property-1", "aliases": ["property-1"]}]
+
+    assert normalization.checkout_tasks_by_property(properties, [], []) == {
+        "property-1": []
+    }
