@@ -4,30 +4,36 @@
   <rect width="900" height="360" rx="72" fill="#F6FBFC"/>
   <svg x="52" y="52" width="256" height="256" viewBox="0 0 512 512">
     <defs>
-      <linearGradient id="background" x1="68" y1="55" x2="444" y2="462" gradientUnits="userSpaceOnUse">
+      <linearGradient id="background" x1="70" y1="54" x2="442" y2="461" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#00A6D6"/>
         <stop offset="0.55" stop-color="#006F9F"/>
         <stop offset="1" stop-color="#255C4F"/>
       </linearGradient>
-      <linearGradient id="accent" x1="168" y1="151" x2="352" y2="371" gradientUnits="userSpaceOnUse">
+      <linearGradient id="accent" x1="154" y1="142" x2="342" y2="353" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#FF8DBA"/>
         <stop offset="1" stop-color="#E83273"/>
       </linearGradient>
     </defs>
     <rect width="512" height="512" rx="112" fill="url(#background)"/>
-    <path d="M113 243.5 256 126l143 117.5v143.2c0 18.4-14.9 33.3-33.3 33.3H146.3c-18.4 0-33.3-14.9-33.3-33.3V243.5Z" fill="#FFFFFF" opacity="0.96"/>
-    <path d="M89 251 256 113l167 138" fill="none" stroke="#FFFFFF" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M164 237c0-22.1 17.9-40 40-40h104c22.1 0 40 17.9 40 40v55c0 22.1-17.9 40-40 40h-40l-52 45v-45h-12c-22.1 0-40-17.9-40-40v-55Z" fill="url(#accent)"/>
-    <circle cx="226" cy="264" r="13" fill="#123D4B"/>
-    <circle cx="286" cy="264" r="13" fill="#123D4B"/>
-    <path d="M226 300c15 12 45 12 60 0" fill="none" stroke="#123D4B" stroke-width="14" stroke-linecap="round"/>
-    <path d="M141 336h-24c-17.7 0-32-14.3-32-32v-13M371 336h24c17.7 0 32-14.3 32-32v-13M256 126V83" fill="none" stroke="#B7F3FF" stroke-width="16" stroke-linecap="round"/>
-    <circle cx="85" cy="278" r="22" fill="#B7F3FF"/>
-    <circle cx="256" cy="71" r="22" fill="#B7F3FF"/>
-    <circle cx="427" cy="278" r="22" fill="#B7F3FF"/>
+    <path d="M102 158h54M356 158h54M256 105v44M119 351h60M333 351h60" fill="none" stroke="#B7F3FF" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="82" cy="158" r="22" fill="#B7F3FF"/>
+    <circle cx="430" cy="158" r="22" fill="#B7F3FF"/>
+    <circle cx="256" cy="82" r="22" fill="#B7F3FF"/>
+    <circle cx="93" cy="351" r="22" fill="#B7F3FF"/>
+    <circle cx="419" cy="351" r="22" fill="#B7F3FF"/>
+    <rect x="132" y="126" width="248" height="276" rx="42" fill="#FFFFFF"/>
+    <path d="M132 168c0-23.2 18.8-42 42-42h164c23.2 0 42 18.8 42 42v48H132v-48Z" fill="#EAFBFF"/>
+    <path d="M186 126v-32M326 126v-32" stroke="#B7F3FF" stroke-width="14" stroke-linecap="round"/>
+    <circle cx="216" cy="286" r="58" fill="url(#accent)"/>
+    <circle cx="198" cy="278" r="11" fill="#123D4B"/>
+    <circle cx="234" cy="278" r="11" fill="#123D4B"/>
+    <path d="M197 308c11 9 27 9 38 0" fill="none" stroke="#123D4B" stroke-width="11" stroke-linecap="round"/>
+    <path d="M274 287l31 31 65-76" fill="none" stroke="#255C4F" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M274 287l31 31 65-76" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <g font-family="Inter, Roboto, Helvetica, Arial, sans-serif" fill="#123D4B">
     <text x="348" y="160" font-size="66" font-weight="750">Hospitable API</text>
     <text x="352" y="225" font-size="36" font-weight="600" fill="#255C4F">for Home Assistant</text>
   </g>
 </svg>
+
