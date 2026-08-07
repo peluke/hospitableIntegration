@@ -1,0 +1,81 @@
+---
+blueprint:
+  name: Hospitable Checkout Task Attention
+  description: >
+    Run notification actions when a Hospitable checkout task needs attention,
+    such as a pending, rejected, cancelled, or unassigned cleaning assignment.
+    Use one automation instance per property.
+  domain: automation
+  source_url: >-
+    https://github.com/peluke/hospitableIntegration/blob/main/blueprints/automation/hospitableIntegration/checkout_task_attention.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    checkout_task_alert_sensor:
+      name: Checkout task alert sensor
+      description: >
+        Hospitable Checkout Task Alert sensor for one property.
+      selector:
+        entity:
+          domain: sensor
+    attention_actions:
+      name: Attention actions
+      description: >
+        Actions to run when one or more checkout tasks need attention.
+      selector:
+        action:
+
+mode: single
+max_exceeded: silent
+
+variables:
+  checkout_task_alert_sensor: !input checkout_task_alert_sensor
+  alert_tasks: "{{ state_attr(checkout_task_alert_sensor, 'alerts') or [] }}"
+  alert_count: "{{ alert_tasks | count }}"
+  task_attention_title: >-
+    {% if alert_count | int == 1 %}
+      Hospitable checkout task needs attention
+    {% else %}
+      Hospitable checkout tasks need attention
+    {% endif %}
+  task_attention_message: >-
+    {% set alerts = alert_tasks %}
+    {% if alerts | count == 0 %}
+      No checkout task alerts are currently present.
+    {% elif alerts | count == 1 %}
+      {% set task = alerts[0] %}
+      {{ task.title | default('Checkout task', true) }} is
+      {{ task.assignment_status | default('unknown', true) }} for
+      {{ task.assignee_name | default('unassigned', true) }}.
+      Due: {{ task.due_date | default('unknown', true) }}.
+    {% else %}
+      {{ alerts | count }} checkout tasks need attention:
+      {% for task in alerts %}
+        {{ task.title | default('Checkout task', true) }} -
+        {{ task.assignment_status | default('unknown', true) }} -
+        {{ task.assignee_name | default('unassigned', true) }}
+        {% if not loop.last %}; {% endif %}
+      {% endfor %}
+    {% endif %}
+
+triggers:
+  - trigger: state
+    entity_id: !input checkout_task_alert_sensor
+    to: "on"
+  - trigger: homeassistant
+    event: start
+
+conditions:
+  - condition: state
+    entity_id: !input checkout_task_alert_sensor
+    state: "on"
+  - condition: template
+    value_template: "{{ alert_count | int > 0 }}"
+
+actions:
+  - alias: Run configured task attention actions
+    choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ true }}"
+        sequence: !input attention_actions

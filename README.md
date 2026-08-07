@@ -41,12 +41,12 @@ The user-facing name is Hospitable Integration. The Home Assistant domain
 remains `hospitable_api` so existing config entries and automations continue to
 load after upgrade.
 
-## Example Automation
+## Automation Notes
 
 Checkout task assignment alerts are exposed per property with the `Checkout
-Task Alert` sensor. The sensor turns `on` when a checkout-day task is pending,
-unaccepted, declined, or rejected. Tasks with unknown assignment status are
-listed in attributes but do not trigger the alert.
+Task Alert` sensor. The sensor turns `on` when a checkout-day task assignment
+is pending, unaccepted, rejected, cancelled, or unassigned. Tasks with unknown
+assignment status are listed in attributes but do not trigger the alert.
 
 Task diagnostics expose detail fetch counts, detail fetch errors, and sampled
 response keys so field-shape issues can be debugged without publishing raw task
@@ -60,19 +60,6 @@ If the Hospitable task endpoint is unavailable for the token, the task sensors
 still load as `0`/`off` and expose the API error in the
 `hospitable_task_error` attribute. Task list requests intentionally avoid
 unsupported per-task includes.
-
-```yaml
-alias: Cleaning task needs attention
-triggers:
-  - trigger: state
-    entity_id: sensor.hospitable_manzanita_checkout_task_alert
-    to: "on"
-actions:
-  - action: notify.mobile_app_your_phone
-    data:
-      title: Cleaning task needs attention
-      message: "{{ state_attr(trigger.entity_id, 'alerts') }}"
-```
 
 ```yaml
 alias: Message current guest when door unlocks
@@ -103,26 +90,12 @@ actions:
 - [Notes](https://github.com/peluke/hospitableIntegration/wiki/Notes)
 - [Troubleshooting](https://github.com/peluke/hospitableIntegration/wiki/Troubleshooting)
 - [First Arrival Blueprint](https://github.com/peluke/hospitableIntegration/wiki/First-Arrival-Blueprint)
+- [Task Attention Blueprint](https://github.com/peluke/hospitableIntegration/wiki/Task-Attention-Blueprint)
+- [Task API Probe](https://github.com/peluke/hospitableIntegration/wiki/Task-API-Probe)
 
-## Task API Probe
-
-For local troubleshooting, `scripts/hospitable_task_probe.py` can inspect the
-Hospitable task list/detail response structure without storing credentials:
-
-```bash
-export HOSPITABLE_API_TOKEN="your-token"
-export HOSPITABLE_PROPERTY_UUIDS="property-uuid-1,property-uuid-2"
-python3 scripts/hospitable_task_probe.py --fetch-detail --limit 3
-```
-
-To inspect one task detail directly:
-
-```bash
-python3 scripts/hospitable_task_probe.py --task-id "task-uuid" --show-values
-```
-
-Blueprint import URL:
+Blueprint import URLs:
 
 ```text
 https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/automation/hospitableIntegration/guest_first_arrival.yaml
+https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/automation/hospitableIntegration/checkout_task_attention.yaml
 ```

@@ -38,7 +38,7 @@ Each Hospitable property gets:
 - `Next Guest`: next arrival, with reservation details in attributes.
 - `Upcoming Guests`: count of upcoming reservations, with reservation list in attributes.
 - `Checkout Tasks`: count of tasks that land on known checkout dates.
-- `Checkout Task Alert`: `on` when a checkout-day task is pending, unaccepted, declined, or rejected.
+- `Checkout Task Alert`: `on` when a checkout-day task assignment is pending, unaccepted, rejected, cancelled, or unassigned.
 - Task diagnostic attributes: detail fetch attempts, successes, errors, and sampled response keys for troubleshooting Hospitable task status fields.
 - Hospitable task fields: reads `progress_status`, `task_assignment.status`, and `task_assignment.updated_at`.
 - Current reservation detail sensors: reservation UUID, reservation code, check-in, check-out, status, and platform.
@@ -57,19 +57,24 @@ Use either:
 - `reservation_uuid`
 - `entity_id` for a Hospitable current or next guest sensor with a `reservation_uuid` attribute
 
-## Blueprint
+## Blueprints
 
-The repository includes a reusable automation blueprint at
-`blueprints/automation/hospitableIntegration/guest_first_arrival.yaml`.
+The repository includes reusable automation blueprints:
 
-Use one automation instance per property/lock. Each instance watches a lock
-entity, compares the active Hospitable reservation UUID with an `input_text`
-helper, and sends a notification only once for each reservation.
+- `blueprints/automation/hospitableIntegration/guest_first_arrival.yaml`
+- `blueprints/automation/hospitableIntegration/checkout_task_attention.yaml`
 
-Blueprint import URL:
+Use one blueprint automation instance per property. The first-arrival blueprint
+watches a lock entity, compares the active Hospitable reservation UUID with an
+`input_text` helper, and sends a notification only once for each reservation.
+The task-attention blueprint watches one property's `Checkout Task Alert`
+sensor and runs notification actions when checkout tasks need attention.
+
+Blueprint import URLs:
 
 ```text
 https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/automation/hospitableIntegration/guest_first_arrival.yaml
+https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/automation/hospitableIntegration/checkout_task_attention.yaml
 ```
 
 ## Security Notes
@@ -87,6 +92,7 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-07: Added the checkout task attention blueprint and moved Task API Probe documentation to the GitHub Wiki.
 - 2026-08-06: Normalized Hospitable task `progress_status` and `task_assignment.status`, added assignment timestamps, and added the local task API probe script.
 - 2026-08-06: Added task-detail diagnostics for checkout tasks so missing Hospitable task status fields can be debugged without exposing raw task payloads.
 - 2026-08-06: Added checkout-task detail enrichment and stopped treating unknown task assignment status as an alert.
