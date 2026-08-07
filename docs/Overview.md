@@ -92,6 +92,7 @@ https://raw.githubusercontent.com/peluke/hospitableIntegration/main/blueprints/a
 
 ## Change Log
 
+- 2026-08-07: Moved README Automation Notes content to the GitHub Wiki.
 - 2026-08-07: Added the checkout task attention blueprint and moved Task API Probe documentation to the GitHub Wiki.
 - 2026-08-06: Normalized Hospitable task `progress_status` and `task_assignment.status`, added assignment timestamps, and added the local task API probe script.
 - 2026-08-06: Added task-detail diagnostics for checkout tasks so missing Hospitable task status fields can be debugged without exposing raw task payloads.
